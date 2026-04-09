@@ -1,9 +1,8 @@
-Notepad Pro
+
 Notepad Pro is a powerful, feature-rich, and privacy-focused web-based text editor. Designed as a progressive web application (PWA) alternative to traditional desktop notepads, it offers a seamless writing experience with modern UI/UX elements, rich text formatting, and robust file handling capabilities—all within a single HTML file.
 
 Built by Pratama Digital, this tool requires no backend installation. Simply open the HTML file in any modern browser to start writing.
 
-LicenseVersion
 
 ✨ Features
 📝 Rich Text Editing
