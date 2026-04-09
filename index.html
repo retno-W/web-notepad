@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notepad Pro - Pratama Digital</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Nunito:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -20,17 +20,11 @@
                         'mono': ['JetBrains Mono', 'monospace']
                     },
                     colors: {
+                        // Changed Primary Color to Indigo
                         primary: {
-                            50: '#e8f5e9',
-                            100: '#c8e6c9',
-                            200: '#a5d6a7',
-                            300: '#81c784',
-                            400: '#66bb6a',
-                            500: '#4caf50',
-                            600: '#43a047',
-                            700: '#388e3c',
-                            800: '#2e7d32',
-                            900: '#1b5e20'
+                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
+                            400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
+                            800: '#3730a3', 900: '#312e81'
                         }
                     }
                 }
@@ -44,830 +38,889 @@
             --text: #1a1a2e;
             --text-secondary: #6b7280;
             --border: #e0e0e0;
-            --accent: #43a047;
-            --accent-hover: #388e3c;
+            --accent: #4f46e5; /* Indigo 600 */
+            --accent-hover: #4338ca; /* Indigo 700 */
             --shadow: rgba(0, 0, 0, 0.08);
         }
-
         .dark {
             --bg: #0f0f1a;
             --surface: #1a1a2e;
             --text: #e8e8e8;
             --text-secondary: #9ca3af;
             --border: #2d2d44;
-            --accent: #66bb6a;
-            --accent-hover: #81c784;
+            --accent: #818cf8; /* Indigo 400 */
+            --accent-hover: #a5b4fc; /* Indigo 300 */
             --shadow: rgba(0, 0, 0, 0.4);
         }
-
-        /* Main Layout Fix for Separate Scroll */
-        html, body {
-            height: 100%;
-            overflow: hidden; /* Disable page scroll */
-            margin: 0;
-            padding: 0;
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-        }
-
-        .app-container {
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
-        /* Custom Scrollbar */
-        * {
-            scrollbar-width: thin;
-            scrollbar-color: var(--accent) var(--surface);
-        }
-
-        *::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
-        }
-
-        *::-webkit-scrollbar-track {
-            background: var(--surface);
-        }
-
-        *::-webkit-scrollbar-thumb {
-            background: var(--accent);
-            border-radius: 4px;
-        }
-
-        /* Editor Styling */
-        .editor-area {
-            background: var(--surface);
-            color: var(--text);
-            font-family: 'JetBrains Mono', monospace;
-            line-height: 1.6;
-            min-height: 100%; /* Ensure it fills container */
-            padding: 2rem;
-            outline: none;
-            overflow-y: auto; /* Scroll internal for editor */
-            flex-grow: 1;
-        }
-
-        .editor-area:empty:before {
-            content: 'Mulai mengetik di sini...';
-            color: var(--text-secondary);
-            opacity: 0.5;
-        }
-
-        /* UI Components */
-        .btn-icon {
-            width: 36px;
-            height: 36px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 8px;
-            background: transparent;
-            color: var(--text-secondary);
-            transition: all 0.2s ease;
-            border: none;
-            cursor: pointer;
-        }
-
-        .btn-icon:hover {
-            background: var(--accent);
-            color: white;
-            transform: translateY(-1px);
-        }
-
-        .btn-icon.active {
-            background: rgba(67, 160, 71, 0.1);
-            color: var(--accent);
-        }
-
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            box-shadow: 0 2px 10px var(--shadow);
-        }
-
-        /* Dropdown */
-        .dropdown {
-            position: relative;
-        }
-
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            top: 110%;
-            left: 0;
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            min-width: 200px;
-            z-index: 100;
-            box-shadow: 0 10px 25px var(--shadow);
-            overflow: hidden;
-        }
-
-        .dropdown-content.show {
-            display: block;
-            animation: fadeIn 0.2s ease;
-        }
-
-        .dropdown-item {
-            padding: 10px 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            cursor: pointer;
-            transition: all 0.15s ease;
-            color: var(--text);
-            font-size: 0.9rem;
-        }
-
-        .dropdown-item:hover {
-            background: var(--accent);
-            color: white;
-        }
-
-        .dropdown-item i { width: 16px; }
-
-        /* Tabs */
-        .tab {
-            padding: 8px 16px;
-            background: transparent;
-            border-bottom: 2px solid transparent;
-            color: var(--text-secondary);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.875rem;
-        }
-
-        .tab.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-            font-weight: 600;
-        }
-
-        .tab:hover:not(.active) {
-            background: rgba(0,0,0,0.05);
-        }
+        html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+        .app-container { display: flex; flex-direction: column; height: 100vh; }
+        * { scrollbar-width: thin; scrollbar-color: var(--accent) var(--surface); }
+        *::-webkit-scrollbar { width: 8px; height: 8px; }
+        *::-webkit-scrollbar-track { background: var(--surface); }
+        *::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
         
-        .dark .tab:hover:not(.active) {
-            background: rgba(255,255,255,0.05);
+        .editor-area {
+            background: var(--surface); color: var(--text); font-family: 'JetBrains Mono', monospace;
+            line-height: 1.6; min-height: 100%; padding: 2rem; outline: none; overflow-y: auto; flex-grow: 1;
+        }
+        .editor-area:empty:before { content: 'Mulai mengetik di sini...'; color: var(--text-secondary); opacity: 0.5; }
+        
+        #htmlSource {
+            background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace;
+            line-height: 1.5; padding: 1rem; outline: none; overflow-y: auto; flex-grow: 1;
+            border: none; resize: none; white-space: pre-wrap; width: 100%; height: 100%;
         }
 
-        .tab-close {
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            opacity: 0.6;
+        .btn-icon {
+            width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+            border-radius: 8px; background: transparent; color: var(--text-secondary);
+            transition: all 0.2s ease; border: none; cursor: pointer;
         }
+        .btn-icon:hover { background: var(--accent); color: white; transform: translateY(-1px); }
+        .btn-icon.active { background: rgba(79, 70, 229, 0.15); color: var(--accent); }
+        
+        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 10px var(--shadow); }
+        
+        .dropdown { position: relative; }
+        .dropdown-content {
+            display: none; position: absolute; top: 110%; left: 0; background: var(--surface);
+            border: 1px solid var(--border); border-radius: 10px; min-width: 200px; z-index: 1000;
+            box-shadow: 0 10px 25px var(--shadow); overflow: hidden;
+        }
+        .dropdown-content.show { display: block; animation: fadeIn 0.2s ease; }
+        .dropdown-item {
+            padding: 10px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+            transition: all 0.15s ease; color: var(--text); font-size: 0.9rem;
+        }
+        .dropdown-item:hover { background: var(--accent); color: white; }
+        .dropdown-item i { width: 16px; }
+        
+        .tab {
+            padding: 8px 16px; background: transparent; border-bottom: 2px solid transparent;
+            color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease;
+            display: flex; align-items: center; gap: 8px; font-size: 0.875rem;
+        }
+        .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+        .tab:hover:not(.active) { background: rgba(0,0,0,0.05); }
+        .dark .tab:hover:not(.active) { background: rgba(255,255,255,0.05); }
+        .tab-close { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.6; }
         .tab-close:hover { opacity: 1; background: rgba(0,0,0,0.1); }
-
-        /* Toast */
+        
         .toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--accent);
-            color: white;
-            padding: 12px 24px;
-            border-radius: 8px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transform: translateY(100px);
-            opacity: 0;
-            transition: all 0.3s ease;
-            z-index: 1000;
+            position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: white;
+            padding: 12px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000;
         }
-        .toast.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        /* Modal */
-        .modal-backdrop {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.4);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 999;
-        }
+        .toast.show { transform: translateY(0); opacity: 1; }
+        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 999; }
         .modal-backdrop.show { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 8px; }
+        .status-bar { background: var(--surface); border-top: 1px solid var(--border); padding: 6px 16px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; }
+        .theme-switch { width: 40px; height: 22px; background: var(--border); border-radius: 11px; position: relative; cursor: pointer; transition: background 0.3s; }
+        .theme-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+        .dark .theme-switch { background: var(--accent); }
+        .dark .theme-switch::after { transform: translateX(18px); }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .find-panel { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 16px; gap: 8px; align-items: center; flex-wrap: wrap; }
+        .find-panel.show { display: flex; animation: fadeIn 0.2s ease; }
+        .find-input { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; outline: none; min-width: 160px; }
+        .find-input:focus { border-color: var(--accent); }
+        .find-btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text); transition: all 0.15s; }
+        .find-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
+        .find-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
+        .find-btn.primary:hover { background: var(--accent-hover); }
+        .find-close { background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; border-radius: 4px; }
+        .find-close:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+        .match-count { font-size: 12px; color: var(--text-secondary); }
+        .highlight-match { background: #facc15; color: #1a1a1a; border-radius: 2px; }
+        .highlight-current { background: #f97316; color: white; border-radius: 2px; }
+
+        .font-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; outline: none; }
+        .font-select:focus { border-color: var(--accent); }
+
+        .color-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: none; cursor: pointer; transition: all 0.2s ease; position: relative; }
+        .color-btn:hover { background: rgba(0,0,0,0.08); }
+        .color-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 18px; height: 4px; border-radius: 2px; background: #000; }
+
+        @media print {
+            body { overflow: visible !important; background: white !important; }
+            .app-container { height: auto !important; }
+            header, .find-panel, [id="tabsContainer"], .status-bar, footer, #toast, .modal-backdrop, #fileInput, #printStyleBtn, #htmlSource { display: none !important; }
+            .editor-area { border: none !important; box-shadow: none !important; padding: 0 !important; overflow: visible !important; font-size: 12pt !important; min-height: unset !important; }
+            #editorContainer { position: static !important; overflow: visible !important; }
+            .flex-grow { overflow: visible !important; }
+            [id^="editor-"] { display: none !important; }
+            [data-print-active="true"] { display: block !important; }
         }
 
-        /* Divider */
-        .divider {
-            width: 1px;
-            height: 24px;
-            background: var(--border);
-            margin: 0 8px;
-        }
-
-        /* Status Bar */
-        .status-bar {
-            background: var(--surface);
-            border-top: 1px solid var(--border);
-            padding: 6px 16px;
-            font-size: 12px;
-            color: var(--text-secondary);
-            display: flex;
-            justify-content: space-between;
-        }
-
-        /* Theme Toggle */
-        .theme-switch {
-            width: 40px;
-            height: 22px;
-            background: var(--border);
-            border-radius: 11px;
-            position: relative;
-            cursor: pointer;
-            transition: background 0.3s;
-        }
-        .theme-switch::after {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            background: white;
-            border-radius: 50%;
-            top: 2px;
-            left: 2px;
-            transition: transform 0.3s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-        .dark .theme-switch {
-            background: var(--accent);
-        }
-        .dark .theme-switch::after {
-            transform: translateX(18px);
-        }
+        .toolbar-wrapper { position: relative; z-index: 20; }
     </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Header -->
-        <header class="px-4 py-2 border-b flex items-center justify-between" style="background: var(--surface); border-color: var(--border);">
-            <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center text-white">
-                    <i class="fas fa-file-alt text-sm"></i>
-                </div>
-                <span class="font-semibold hidden sm:block">Notepad Pro</span>
+<div class="app-container">
+    <!-- Header -->
+    <header class="px-4 py-2 border-b flex items-center justify-between" style="background: var(--surface); border-color: var(--border);">
+        <div class="flex items-center gap-2">
+            <!-- Logo Updated: Icon changed to pen-nib, Color to Indigo Gradient -->
+            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
+                <i class="fas fa-pen-nib text-sm"></i>
             </div>
-            
-            <div class="flex items-center gap-2">
-                <div class="flex items-center border rounded-lg px-2 py-1" style="border-color: var(--border);">
-                    <button onclick="changeFontSize(-1)" class="btn-icon h-6 w-6"><i class="fas fa-minus text-xs"></i></button>
-                    <span id="fontSizeDisplay" class="text-xs w-6 text-center font-mono">14</span>
-                    <button onclick="changeFontSize(1)" class="btn-icon h-6 w-6"><i class="fas fa-plus text-xs"></i></button>
-                </div>
-                <div class="divider h-4"></div>
-                <div onclick="toggleTheme()" class="theme-switch" title="Ganti Tema"></div>
-            </div>
-        </header>
-
-        <!-- Toolbar -->
-        <div class="px-4 py-2 border-b flex items-center gap-1 flex-wrap" style="background: var(--surface); border-color: var(--border);">
-            <!-- File Dropdown -->
-            <div class="dropdown">
-                <button onclick="toggleDropdown('fileMenu')" class="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800" style="color: var(--text);">
-                    File <i class="fas fa-chevron-down text-xs ml-1"></i>
-                </button>
-                <div id="fileMenu" class="dropdown-content">
-                    <div class="dropdown-item" onclick="newFile()"><i class="fas fa-file-plus"></i> Baru</div>
-                    <div class="dropdown-item" onclick="openFileDialog()"><i class="fas fa-folder-open"></i> Buka</div>
-                    <div class="dropdown-item" onclick="saveFile()"><i class="fas fa-save"></i> Simpan</div>
-                    <div class="dropdown-item" onclick="showSaveAsModal()"><i class="fas fa-file-export"></i> Simpan Sebagai</div>
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <!-- Quick Tools -->
-            <button onclick="newFile()" class="btn-icon" title="New"><i class="fas fa-file-medical"></i></button>
-            <button onclick="openFileDialog()" class="btn-icon" title="Open"><i class="fas fa-folder-open"></i></button>
-            <button onclick="saveFile()" class="btn-icon" title="Save"><i class="fas fa-save"></i></button>
-
-            <div class="divider"></div>
-
-            <!-- Formatting -->
-            <button onclick="formatText('bold')" class="btn-icon" title="Bold"><i class="fas fa-bold"></i></button>
-            <button onclick="formatText('italic')" class="btn-icon" title="Italic"><i class="fas fa-italic"></i></button>
-            <button onclick="formatText('underline')" class="btn-icon" title="Underline"><i class="fas fa-underline"></i></button>
-            <button onclick="formatText('strikeThrough')" class="btn-icon" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
-
-            <div class="divider"></div>
-
-            <!-- Alignment & List -->
-            <button onclick="formatText('justifyLeft')" class="btn-icon" title="Align Left"><i class="fas fa-align-left"></i></button>
-            <button onclick="formatText('justifyCenter')" class="btn-icon" title="Align Center"><i class="fas fa-align-center"></i></button>
-            <button onclick="formatText('justifyRight')" class="btn-icon" title="Align Right"><i class="fas fa-align-right"></i></button>
-            <button onclick="formatText('insertUnorderedList')" class="btn-icon" title="List"><i class="fas fa-list-ul"></i></button>
-
-            <div class="divider"></div>
-
-            <!-- Utility -->
-            <button onclick="copyText()" class="btn-icon" title="Copy"><i class="fas fa-copy"></i></button>
-            <button onclick="pasteText()" class="btn-icon" title="Paste"><i class="fas fa-paste"></i></button>
-            <button onclick="clearContent()" class="btn-icon hover:bg-red-500 hover:text-white" title="Clear All" style="color: #ef4444;"><i class="fas fa-trash-alt"></i></button>
-
-            <div class="divider"></div>
-
-            <button onclick="formatText('undo')" class="btn-icon" title="Undo"><i class="fas fa-undo"></i></button>
-            <button onclick="formatText('redo')" class="btn-icon" title="Redo"><i class="fas fa-redo"></i></button>
+            <span class="font-semibold hidden sm:block">Notepad Pro</span>
         </div>
-
-        <!-- Tabs -->
-        <div class="px-4 flex items-center border-b bg-opacity-50 overflow-x-auto" style="background: var(--bg); border-color: var(--border);" id="tabsContainer">
-            <div class="tab active" data-tab="0" onclick="switchTab(0)">
-                <i class="fas fa-file-alt text-xs"></i>
-                <span id="tabName-0">Untitled</span>
-                <span class="tab-close" onclick="closeTab(event, 0)"><i class="fas fa-times"></i></span>
+        <div class="flex items-center gap-2">
+            <div class="flex items-center border rounded-lg px-2 py-1" style="border-color: var(--border);">
+                <button onclick="changeFontSize(-1)" class="btn-icon h-6 w-6"><i class="fas fa-minus text-xs"></i></button>
+                <span id="fontSizeDisplay" class="text-xs w-6 text-center font-mono">14</span>
+                <button onclick="changeFontSize(1)" class="btn-icon h-6 w-6"><i class="fas fa-plus text-xs"></i></button>
             </div>
-            <button onclick="addNewTab()" class="btn-icon h-8 w-8 mx-1" title="New Tab"><i class="fas fa-plus"></i></button>
+            <div class="divider h-4"></div>
+            <div onclick="toggleTheme()" class="theme-switch" title="Ganti Tema"></div>
         </div>
+    </header>
 
-        <!-- Main Editor Area (Takes remaining space) -->
-        <div class="flex-grow overflow-hidden relative" style="background: var(--bg);">
-            <div id="editorContainer" class="absolute inset-0 overflow-y-auto">
-                <div id="editor-0" class="editor-area" contenteditable="true" oninput="handleInput()"></div>
+    <!-- Toolbar -->
+    <div class="toolbar-wrapper px-4 py-2 border-b flex items-center gap-1 flex-wrap" style="background: var(--surface); border-color: var(--border);">
+        <!-- File Dropdown -->
+        <div class="dropdown">
+            <button onclick="toggleDropdown('fileMenu')" class="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800" style="color: var(--text);">
+                File <i class="fas fa-chevron-down text-xs ml-1"></i>
+            </button>
+            <div id="fileMenu" class="dropdown-content">
+                <div class="dropdown-item" onclick="newFile()"><i class="fas fa-file-plus"></i> Baru</div>
+                <div class="dropdown-item" onclick="openFileDialog()"><i class="fas fa-folder-open"></i> Buka</div>
+                <div class="dropdown-item" onclick="saveFile()"><i class="fas fa-save"></i> Simpan</div>
+                <div class="dropdown-item" onclick="showSaveAsModal()"><i class="fas fa-file-export"></i> Simpan Sebagai</div>
+                <div style="height:1px;background:var(--border);margin:4px 0;"></div>
+                <div class="dropdown-item" onclick="printDocument()"><i class="fas fa-print"></i> Cetak / Print</div>
             </div>
         </div>
 
-        <!-- Status Bar (Bottom) -->
-        <div class="status-bar">
-            <div class="flex items-center gap-4">
-                <span id="currentFileName">Untitled</span>
-                <span id="saveStatusIcon" class="text-green-500"><i class="fas fa-check-circle"></i></span>
-            </div>
-            <div class="flex items-center gap-4 font-mono">
-                <span><i class="fas fa-font mr-1"></i> <span id="wordCount">0</span> Kata</span>
-                <span><i class="fas fa-text-width mr-1"></i> <span id="charCount">0</span> Karakter</span>
-            </div>
+        <div class="divider"></div>
+
+        <!-- Quick Tools -->
+        <button onclick="newFile()" class="btn-icon" title="New"><i class="fas fa-file-medical"></i></button>
+        <button onclick="openFileDialog()" class="btn-icon" title="Open"><i class="fas fa-folder-open"></i></button>
+        <button onclick="saveFile()" class="btn-icon" title="Save"><i class="fas fa-save"></i></button>
+        <button onclick="printDocument()" class="btn-icon" id="printStyleBtn" title="Print"><i class="fas fa-print"></i></button>
+
+        <div class="divider"></div>
+
+        <!-- Font Family Selector -->
+        <select id="fontFamilySelect" class="font-select" onchange="changeFontFamily(this.value)" title="Font">
+            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
+            <option value="'Inter', sans-serif">Inter</option>
+            <option value="'Roboto', sans-serif">Roboto</option>
+            <option value="'Open Sans', sans-serif">Open Sans</option>
+            <option value="'Lato', sans-serif">Lato</option>
+            <option value="'Poppins', sans-serif">Poppins</option>
+            <option value="'Nunito', sans-serif">Nunito</option>
+            <option value="'Merriweather', serif">Merriweather</option>
+            <option value="'Playfair Display', serif">Playfair Display</option>
+            <option value="'Source Code Pro', monospace">Source Code Pro</option>
+            <option value="Arial, sans-serif">Arial</option>
+            <option value="Georgia, serif">Georgia</option>
+            <option value="'Times New Roman', serif">Times New Roman</option>
+            <option value="'Courier New', monospace">Courier New</option>
+        </select>
+
+        <div class="divider"></div>
+
+        <!-- Formatting -->
+        <button onclick="formatText('bold')" class="btn-icon" title="Bold"><i class="fas fa-bold"></i></button>
+        <button onclick="formatText('italic')" class="btn-icon" title="Italic"><i class="fas fa-italic"></i></button>
+        <button onclick="formatText('underline')" class="btn-icon" title="Underline"><i class="fas fa-underline"></i></button>
+        <button onclick="formatText('strikeThrough')" class="btn-icon" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+
+        <!-- Font Color -->
+        <div style="position:relative; display:inline-flex; align-items:center;">
+            <button class="color-btn" title="Warna Font" onclick="triggerColorPicker()">
+                <i class="fas fa-font" style="font-size:14px; color: var(--text-secondary);"></i>
+                <span class="color-indicator" id="colorIndicator"></span>
+            </button>
+            <input type="color" id="fontColorPicker" value="#000000" style="position:absolute;opacity:0;width:0;height:0;" onchange="applyFontColor(this.value)" oninput="applyFontColor(this.value)">
         </div>
 
-        <!-- Footer -->
-        <footer class="text-center py-2 text-xs border-t" style="background: var(--surface); border-color: var(--border); color: var(--text-secondary);">
-            &copy; 2024 <a href="https://pratamadigital.com" target="_blank" class="font-semibold hover:text-primary-600">pratamadigital.com</a>
-        </footer>
+        <!-- Highlight Color -->
+        <div style="position:relative; display:inline-flex; align-items:center;" title="Highlight Teks">
+            <button class="color-btn" title="Highlight" onclick="triggerHighlightPicker()">
+                <i class="fas fa-highlighter" style="font-size:13px; color: var(--text-secondary);"></i>
+                <span class="color-indicator" id="highlightIndicator" style="background:#facc15;"></span>
+            </button>
+            <input type="color" id="highlightPicker" value="#facc15" style="position:absolute;opacity:0;width:0;height:0;" onchange="applyHighlight(this.value)" oninput="applyHighlight(this.value)">
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Link Tools -->
+        <button onclick="insertLink()" class="btn-icon" title="Sisipkan Link"><i class="fas fa-link"></i></button>
+        <button onclick="removeLink()" class="btn-icon" title="Hapus Link"><i class="fas fa-unlink"></i></button>
+
+        <div class="divider"></div>
+
+        <!-- Alignment & List -->
+        <button onclick="formatText('justifyLeft')" class="btn-icon" title="Align Left"><i class="fas fa-align-left"></i></button>
+        <button onclick="formatText('justifyCenter')" class="btn-icon" title="Align Center"><i class="fas fa-align-center"></i></button>
+        <button onclick="formatText('justifyRight')" class="btn-icon" title="Align Right"><i class="fas fa-align-right"></i></button>
+        <button onclick="formatText('insertUnorderedList')" class="btn-icon" title="List"><i class="fas fa-list-ul"></i></button>
+
+        <div class="divider"></div>
+
+        <!-- Find & Replace Toggle -->
+        <button onclick="toggleFindPanel()" class="btn-icon" title="Find & Replace (Ctrl+H)" id="findToggleBtn"><i class="fas fa-search"></i></button>
+        
+        <!-- HTML Mode Toggle -->
+        <button onclick="toggleHtmlMode()" class="btn-icon" title="Mode HTML (Code View)" id="htmlModeBtn"><i class="fas fa-code"></i></button>
+
+        <div class="divider"></div>
+
+        <!-- Utility -->
+        <button onclick="copyText()" class="btn-icon" title="Copy"><i class="fas fa-copy"></i></button>
+        <button onclick="pasteText()" class="btn-icon" title="Paste"><i class="fas fa-paste"></i></button>
+        <button onclick="clearContent()" class="btn-icon hover:bg-red-500 hover:text-white" title="Clear All" style="color: #ef4444;"><i class="fas fa-trash-alt"></i></button>
+        <div class="divider"></div>
+        <button onclick="formatText('undo')" class="btn-icon" title="Undo"><i class="fas fa-undo"></i></button>
+        <button onclick="formatText('redo')" class="btn-icon" title="Redo"><i class="fas fa-redo"></i></button>
     </div>
 
-    <!-- Save As Modal -->
-    <div id="saveAsModal" class="modal-backdrop">
-        <div class="card p-6 w-full max-w-sm mx-4" style="background: var(--surface);">
-            <h3 class="font-bold mb-4 text-lg" style="color: var(--text);">Simpan Sebagai</h3>
-            <div class="space-y-3">
-                <input type="text" id="saveFileName" placeholder="Nama file" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
-                <select id="saveFormat" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
-                    <option value="txt">Text File (.txt)</option>
-                    <option value="rtf">Rich Text (.rtf)</option>
-                    <option value="pdf">PDF Document (.pdf)</option>
-                    <option value="html">HTML File (.html)</option>
-                </select>
-            </div>
-            <div class="flex justify-end gap-2 mt-6">
-                <button onclick="closeSaveAsModal()" class="px-4 py-2 rounded-lg text-sm font-medium" style="background: var(--border); color: var(--text);">Batal</button>
-                <button onclick="executeSaveAs()" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: var(--accent);">Simpan</button>
-            </div>
+    <!-- Find & Replace Panel -->
+    <div id="findPanel" class="find-panel">
+        <i class="fas fa-search" style="color:var(--text-secondary); font-size:13px;"></i>
+        <input type="text" id="findInput" class="find-input" placeholder="Cari teks..." oninput="onFindInput()" onkeydown="findKeydown(event)">
+        <input type="text" id="replaceInput" class="find-input" placeholder="Ganti dengan...">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
+            <input type="checkbox" id="matchCase" onchange="onFindInput()"> Case-sensitive
+        </label>
+        <span class="match-count" id="matchCount"></span>
+        <button class="find-btn" onclick="findPrev()" title="Sebelumnya"><i class="fas fa-chevron-up"></i></button>
+        <button class="find-btn" onclick="findNext()" title="Berikutnya"><i class="fas fa-chevron-down"></i></button>
+        <button class="find-btn" onclick="replaceCurrent()">Ganti</button>
+        <button class="find-btn primary" onclick="replaceAll()">Ganti Semua</button>
+        <button class="find-close" onclick="closeFindPanel()" title="Tutup"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Tabs -->
+    <div class="px-4 flex items-center border-b bg-opacity-50 overflow-x-auto" style="background: var(--bg); border-color: var(--border);" id="tabsContainer">
+        <div class="tab active" data-tab="0" onclick="switchTab(0)">
+            <i class="fas fa-file-alt text-xs"></i>
+            <span id="tabName-0">Untitled</span>
+            <span class="tab-close" onclick="closeTab(event, 0)"><i class="fas fa-times"></i></span>
+        </div>
+        <button onclick="addNewTab()" class="btn-icon h-8 w-8 mx-1" title="New Tab"><i class="fas fa-plus"></i></button>
+    </div>
+
+    <!-- Main Editor Area -->
+    <div class="flex-grow overflow-hidden relative" style="background: var(--bg);">
+        <div id="editorContainer" class="absolute inset-0 overflow-y-auto">
+            <div id="editor-0" class="editor-area" contenteditable="true" oninput="handleInput()"></div>
+            <textarea id="htmlSource" class="editor-area" style="display:none;" oninput="handleSourceInput()" spellcheck="false"></textarea>
         </div>
     </div>
 
-    <!-- Toast -->
-    <div id="toast" class="toast">Message</div>
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <div class="flex items-center gap-4">
+            <span id="currentFileName">Untitled</span>
+            <span id="saveStatusIcon" class="text-green-500"><i class="fas fa-check-circle"></i></span>
+            <span id="modeIndicator" class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">Visual</span>
+        </div>
+        <div class="flex items-center gap-4 font-mono">
+            <span><i class="fas fa-font mr-1"></i> <span id="wordCount">0</span> Kata</span>
+            <span><i class="fas fa-text-width mr-1"></i> <span id="charCount">0</span> Karakter</span>
+        </div>
+    </div>
 
-    <!-- File Input -->
-    <input type="file" id="fileInput" accept=".txt,.rtf,.doc,.docx,.pdf,.html" class="hidden" onchange="handleFileOpen(event)">
+    <!-- Footer -->
+    <footer class="text-center py-2 text-xs border-t" style="background: var(--surface); border-color: var(--border); color: var(--text-secondary);">
+        &copy; 2024 <a href="https://pratamadigital.com" target="_blank" class="font-semibold hover:text-primary-600">pratamadigital.com</a>. 
+        Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" class="font-semibold hover:text-primary-600">AGPL-3.0</a>.
+    </footer>
+</div>
 
-    <script>
-        // State Management
-        let tabs = [{ id: 0, name: 'Untitled', content: '', modified: false }];
-        let activeTab = 0;
-        let tabCounter = 0;
-        let fontSize = 14;
+<!-- Save As Modal -->
+<div id="saveAsModal" class="modal-backdrop">
+    <div class="card p-6 w-full max-w-sm mx-4" style="background: var(--surface);">
+        <h3 class="font-bold mb-4 text-lg" style="color: var(--text);">Simpan Sebagai</h3>
+        <div class="space-y-3">
+            <input type="text" id="saveFileName" placeholder="Nama file" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
+            <select id="saveFormat" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
+                <option value="txt">Text File (.txt)</option>
+                <option value="rtf">Rich Text (.rtf)</option>
+                <option value="pdf">PDF Document (.pdf)</option>
+                <option value="html">HTML File (.html)</option>
+            </select>
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+            <button onclick="closeSaveAsModal()" class="px-4 py-2 rounded-lg text-sm font-medium" style="background: var(--border); color: var(--text);">Batal</button>
+            <button onclick="executeSaveAs()" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: var(--accent);">Simpan</button>
+        </div>
+    </div>
+</div>
 
-        const editorContainer = document.getElementById('editorContainer');
+<!-- Toast -->
+<div id="toast" class="toast">Message</div>
 
-        // Init
-        document.addEventListener('DOMContentLoaded', () => {
-            loadSettings();
-            loadFromLocalStorage();
-        });
+<!-- File Input -->
+<input type="file" id="fileInput" accept=".txt,.rtf,.doc,.docx,.pdf,.html" class="hidden" onchange="handleFileOpen(event)">
 
-        // --- Core Functions ---
+<script>
+// State
+let tabs = [{ id: 0, name: 'Untitled', content: '', modified: false }];
+let activeTab = 0;
+let tabCounter = 0;
+let fontSize = 14;
+let currentFontFamily = "'JetBrains Mono', monospace";
+let currentFontColor = '#000000';
+let currentHighlight = '#facc15';
+let isHtmlMode = false;
 
-        function getEditor(id) {
-            return document.getElementById('editor-' + id);
+// Find/Replace state
+let findMatches = [];
+let currentMatchIndex = -1;
+let findActive = false;
+
+const editorContainer = document.getElementById('editorContainer');
+const htmlSource = document.getElementById('htmlSource');
+const modeIndicator = document.getElementById('modeIndicator');
+
+document.addEventListener('DOMContentLoaded', () => {
+    loadSettings();
+    loadFromLocalStorage();
+    document.getElementById('colorIndicator').style.background = currentFontColor;
+});
+
+// --- Core ---
+function getEditor(id) { return document.getElementById('editor-' + id); }
+function getCurrentEditor() { return getEditor(activeTab); }
+
+function handleInput() {
+    const editor = getCurrentEditor();
+    if (!editor) return;
+    const tab = tabs.find(t => t.id === activeTab);
+    if (tab) { tab.content = editor.innerHTML; tab.modified = true; updateTabUI(tab); }
+    updateStats();
+    updateStatus();
+    clearTimeout(window.autoSaveTimer);
+    window.autoSaveTimer = setTimeout(saveToLocalStorage, 1500);
+    if (findActive) refreshFindHighlights();
+}
+
+function handleSourceInput() {
+    const tab = tabs.find(t => t.id === activeTab);
+    if (tab) {
+        tab.content = htmlSource.value;
+        tab.modified = true;
+        updateTabUI(tab);
+    }
+    const text = htmlSource.value;
+    document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
+    document.getElementById('charCount').textContent = text.length;
+    updateStatus();
+}
+
+function updateStats() {
+    const editor = getCurrentEditor();
+    const text = editor ? editor.innerText : '';
+    document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
+    document.getElementById('charCount').textContent = text.length;
+}
+
+function updateStatus() {
+    const tab = tabs.find(t => t.id === activeTab);
+    if (!tab) return;
+    document.getElementById('currentFileName').textContent = tab.name;
+    const icon = document.getElementById('saveStatusIcon');
+    icon.innerHTML = tab.modified ? '<i class="fas fa-circle text-yellow-500"></i>' : '<i class="fas fa-check-circle text-green-500"></i>';
+}
+
+function updateTabUI(tab) {
+    const el = document.getElementById('tabName-' + tab.id);
+    if (el) el.textContent = (tab.modified ? '* ' : '') + tab.name;
+}
+
+// --- File Ops ---
+function newFile() {
+    saveCurrentState();
+    tabCounter++;
+    const newId = tabCounter;
+    tabs.push({ id: newId, name: 'Untitled', content: '', modified: false });
+    renderTabs();
+    switchTab(newId);
+    showToast('File baru dibuat');
+}
+
+function saveCurrentState() {
+    if (isHtmlMode) {
+        const tab = tabs.find(t => t.id === activeTab);
+        if(tab) tab.content = htmlSource.value;
+    } else {
+        const editor = getCurrentEditor();
+        const tab = tabs.find(t => t.id === activeTab);
+        if (editor && tab) tab.content = editor.innerHTML;
+    }
+}
+
+function switchTab(id) {
+    if (isHtmlMode) {
+        toggleHtmlMode(); 
+    }
+
+    saveCurrentState();
+    activeTab = id;
+    document.querySelectorAll('[id^="editor-"]').forEach(e => e.style.display = 'none');
+    let editor = getEditor(id);
+    const tab = tabs.find(t => t.id === id);
+    if (!editor) {
+        editor = document.createElement('div');
+        editor.id = 'editor-' + id;
+        editor.className = 'editor-area';
+        editor.contentEditable = true;
+        editor.oninput = handleInput;
+        editor.style.fontSize = fontSize + 'px';
+        editor.style.fontFamily = currentFontFamily;
+        editorContainer.insertBefore(editor, htmlSource);
+    }
+    editor.style.display = 'block';
+    editor.innerHTML = tab ? tab.content : '';
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.tab) === id));
+    updateStats();
+    updateStatus();
+}
+
+function addNewTab() { newFile(); }
+
+function closeTab(e, id) {
+    e.stopPropagation();
+    if (tabs.length <= 1) { showToast('Tidak bisa menutup tab terakhir'); return; }
+    const index = tabs.findIndex(t => t.id === id);
+    tabs.splice(index, 1);
+    const editor = getEditor(id);
+    if (editor) editor.remove();
+    if (activeTab === id) switchTab(tabs[0].id);
+    renderTabs();
+    showToast('Tab ditutup');
+}
+
+function renderTabs() {
+    const container = document.getElementById('tabsContainer');
+    container.querySelectorAll('.tab').forEach(t => t.remove());
+    tabs.forEach(tab => {
+        const div = document.createElement('div');
+        div.className = 'tab' + (tab.id === activeTab ? ' active' : '');
+        div.dataset.tab = tab.id;
+        div.onclick = () => switchTab(tab.id);
+        div.innerHTML = `<i class="fas fa-file-alt text-xs"></i><span id="tabName-${tab.id}">${(tab.modified ? '* ' : '') + tab.name}</span><span class="tab-close" onclick="closeTab(event, ${tab.id})"><i class="fas fa-times"></i></span>`;
+        container.insertBefore(div, container.querySelector('button'));
+    });
+}
+
+// --- Formatting ---
+function formatText(cmd) { 
+    if (isHtmlMode) return;
+    document.execCommand(cmd, false, null); 
+    getCurrentEditor().focus(); 
+}
+
+// --- Link Functions ---
+function insertLink() {
+    if (isHtmlMode) return;
+    const url = prompt("Masukkan URL (misal: https://google.com):", "https://");
+    if (url) {
+        document.execCommand('createLink', false, url);
+        showToast('Link ditambahkan');
+    }
+}
+
+function removeLink() {
+    if (isHtmlMode) return;
+    document.execCommand('unlink', false, null);
+    showToast('Link dihapus');
+}
+
+// --- HTML Mode Toggle ---
+function toggleHtmlMode() {
+    const editor = getCurrentEditor();
+    const btn = document.getElementById('htmlModeBtn');
+    
+    if (!editor) return;
+
+    if (!isHtmlMode) {
+        editor.style.display = 'none';
+        htmlSource.style.display = 'block';
+        htmlSource.value = editor.innerHTML;
+        btn.classList.add('active');
+        modeIndicator.textContent = 'HTML';
+        modeIndicator.classList.add('bg-red-100', 'text-red-600');
+        modeIndicator.classList.remove('bg-gray-200');
+        isHtmlMode = true;
+    } else {
+        editor.innerHTML = htmlSource.value;
+        editor.style.display = 'block';
+        htmlSource.style.display = 'none';
+        btn.classList.remove('active');
+        modeIndicator.textContent = 'Visual';
+        modeIndicator.classList.remove('bg-red-100', 'text-red-600');
+        modeIndicator.classList.add('bg-gray-200');
+        isHtmlMode = false;
+        handleInput();
+    }
+}
+
+function copyText() { navigator.clipboard.writeText(getCurrentEditor().innerText).then(() => showToast('Disalin ke clipboard')); }
+function pasteText() { navigator.clipboard.readText().then(text => { document.execCommand('insertText', false, text); showToast('Teks ditempel'); }).catch(() => showToast('Gagal menempel')); }
+function clearContent() {
+    const editor = getCurrentEditor();
+    if (editor && confirm('Hapus semua teks di tab ini?')) { editor.innerHTML = ''; handleInput(); showToast('Konten dihapus'); }
+}
+
+// --- Font Family ---
+function changeFontFamily(family) {
+    currentFontFamily = family;
+    const editor = getCurrentEditor();
+    if (editor) editor.style.fontFamily = family;
+    localStorage.setItem('notepad_fontFamily', family);
+}
+
+// --- Font Color ---
+function triggerColorPicker() { document.getElementById('fontColorPicker').click(); }
+function applyFontColor(color) {
+    currentFontColor = color;
+    document.getElementById('colorIndicator').style.background = color;
+    localStorage.setItem('notepad_fontColor', color);
+    getCurrentEditor().focus();
+    document.execCommand('foreColor', false, color);
+}
+
+// --- Highlight ---
+function triggerHighlightPicker() { document.getElementById('highlightPicker').click(); }
+function applyHighlight(color) {
+    currentHighlight = color;
+    document.getElementById('highlightIndicator').style.background = color;
+    getCurrentEditor().focus();
+    document.execCommand('hiliteColor', false, color);
+}
+
+// --- Print ---
+function printDocument() {
+    const activeEditor = getCurrentEditor();
+    if (!activeEditor) return;
+    activeEditor.setAttribute('data-print-active', 'true');
+    const style = document.createElement('style');
+    style.id = 'printActiveStyle';
+    style.textContent = `@media print { [data-print-active="true"] { display: block !important; } }`;
+    document.head.appendChild(style);
+    window.print();
+    setTimeout(() => {
+        activeEditor.removeAttribute('data-print-active');
+        const s = document.getElementById('printActiveStyle');
+        if (s) s.remove();
+    }, 500);
+}
+
+// --- File IO ---
+function openFileDialog() { document.getElementById('fileInput').click(); }
+
+function handleFileOpen(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const ext = file.name.split('.').pop().toLowerCase();
+    const reader = new FileReader();
+    if (ext === 'pdf') { openPdf(file); }
+    else if (ext === 'docx') { openDocx(file); }
+    else { reader.onload = (ev) => { createFileTab(file.name, ev.target.result); }; reader.readAsText(file); }
+    e.target.value = '';
+}
+
+function createFileTab(name, content) {
+    tabCounter++;
+    const newId = tabCounter;
+    tabs.push({ id: newId, name: name, content: content, modified: false });
+    renderTabs();
+    switchTab(newId);
+    showToast('File dibuka: ' + name);
+}
+
+async function openPdf(file) {
+    try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        const data = await file.arrayBuffer();
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
+        let text = '';
+        for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const content = await page.getTextContent();
+            text += content.items.map(item => item.str).join(' ') + '\n';
         }
+        createFileTab(file.name, text.replace(/\n/g, '<br>'));
+    } catch { showToast('Gagal membuka PDF'); }
+}
 
-        function getCurrentEditor() {
-            return getEditor(activeTab);
+async function openDocx(file) {
+    try {
+        const data = await file.arrayBuffer();
+        const result = await mammoth.convertToHtml({ arrayBuffer: data });
+        createFileTab(file.name, result.value);
+    } catch { showToast('Gagal membuka DOCX'); }
+}
+
+function saveFile() {
+    saveToLocalStorage();
+    const tab = tabs.find(t => t.id === activeTab);
+    if (tab) { tab.modified = false; updateTabUI(tab); }
+    updateStatus();
+    showToast('Tersimpan di LocalStorage');
+}
+
+function showSaveAsModal() {
+    const tab = tabs.find(t => t.id === activeTab);
+    document.getElementById('saveFileName').value = tab ? tab.name.replace(/\.[^/.]+$/, '') : 'Untitled';
+    document.getElementById('saveAsModal').classList.add('show');
+}
+
+function closeSaveAsModal() { document.getElementById('saveAsModal').classList.remove('show'); }
+
+function executeSaveAs() {
+    const name = document.getElementById('saveFileName').value || 'Untitled';
+    const format = document.getElementById('saveFormat').value;
+    if (isHtmlMode) toggleHtmlMode(); 
+
+    const editor = getCurrentEditor();
+    const content = editor.innerHTML;
+    const text = editor.innerText;
+    let blob, filename = name;
+
+    if (format === 'txt') { blob = new Blob([text], { type: 'text/plain' }); filename += '.txt'; }
+    else if (format === 'rtf') {
+        const rtf = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\\f0\\fs24 ${text.replace(/\n/g, '\\par ')}}`;
+        blob = new Blob([rtf], { type: 'application/rtf' }); filename += '.rtf';
+    } else if (format === 'html') {
+        blob = new Blob([`<!DOCTYPE html><html><body>${content}</body></html>`], { type: 'text/html' }); filename += '.html';
+    } else if (format === 'pdf') {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        const lines = doc.splitTextToSize(text, 180);
+        doc.text(lines, 10, 10);
+        doc.save(name + '.pdf');
+        closeSaveAsModal(); return;
+    }
+
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(a.href);
+
+    const tab = tabs.find(t => t.id === activeTab);
+    if (tab) { tab.name = filename; tab.modified = false; renderTabs(); updateStatus(); }
+    closeSaveAsModal();
+    showToast('File diunduh: ' + filename);
+}
+
+// --- Find & Replace ---
+function toggleFindPanel() {
+    const panel = document.getElementById('findPanel');
+    const isShown = panel.classList.contains('show');
+    if (isShown) { closeFindPanel(); } else {
+        panel.classList.add('show');
+        findActive = true;
+        document.getElementById('findToggleBtn').classList.add('active');
+        document.getElementById('findInput').focus();
+        const sel = window.getSelection();
+        if (sel && sel.toString().trim()) document.getElementById('findInput').value = sel.toString().trim();
+        onFindInput();
+    }
+}
+
+function closeFindPanel() {
+    document.getElementById('findPanel').classList.remove('show');
+    document.getElementById('findToggleBtn').classList.remove('active');
+    findActive = false;
+    clearFindHighlights();
+    findMatches = [];
+    currentMatchIndex = -1;
+    document.getElementById('matchCount').textContent = '';
+}
+
+function onFindInput() {
+    clearFindHighlights();
+    findMatches = [];
+    currentMatchIndex = -1;
+    const query = document.getElementById('findInput').value;
+    if (!query) { document.getElementById('matchCount').textContent = ''; return; }
+    performFind(query);
+}
+
+function performFind(query) {
+    const editor = getCurrentEditor();
+    if (!editor || isHtmlMode) return;
+    const matchCase = document.getElementById('matchCase').checked;
+    const flags = matchCase ? 'g' : 'gi';
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, flags);
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+
+    findMatches = [];
+    textNodes.forEach(textNode => {
+        const parent = textNode.parentNode;
+        if (!parent || parent.classList && (parent.classList.contains('highlight-match') || parent.classList.contains('highlight-current'))) return;
+        const text = textNode.textContent;
+        let match;
+        const parts = [];
+        let lastIndex = 0;
+        regex.lastIndex = 0;
+        while ((match = regex.exec(text)) !== null) {
+            if (match.index > lastIndex) parts.push(document.createTextNode(text.slice(lastIndex, match.index)));
+            const span = document.createElement('mark');
+            span.className = 'highlight-match';
+            span.textContent = match[0];
+            parts.push(span);
+            findMatches.push(span);
+            lastIndex = regex.lastIndex;
         }
-
-        function handleInput() {
-            const editor = getCurrentEditor();
-            if (!editor) return;
-
-            // Update content in state
-            const tab = tabs.find(t => t.id === activeTab);
-            if (tab) {
-                tab.content = editor.innerHTML;
-                tab.modified = true;
-                updateTabUI(tab);
-            }
-
-            updateStats();
-            updateStatus();
-
-            // Auto-save debounce
-            clearTimeout(window.autoSaveTimer);
-            window.autoSaveTimer = setTimeout(saveToLocalStorage, 1500);
+        if (parts.length > 0) {
+            if (lastIndex < text.length) parts.push(document.createTextNode(text.slice(lastIndex)));
+            const frag = document.createDocumentFragment();
+            parts.forEach(p => frag.appendChild(p));
+            parent.replaceChild(frag, textNode);
         }
+    });
 
-        function updateStats() {
-            const editor = getCurrentEditor();
-            const text = editor ? editor.innerText : '';
-            
-            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
-            const chars = text.length;
+    document.getElementById('matchCount').textContent = findMatches.length > 0 ? `${findMatches.length} ditemukan` : 'Tidak ditemukan';
+    if (findMatches.length > 0) { currentMatchIndex = 0; highlightCurrent(); }
+}
 
-            document.getElementById('wordCount').textContent = words;
-            document.getElementById('charCount').textContent = chars;
-        }
+function highlightCurrent() {
+    findMatches.forEach((m, i) => { m.className = i === currentMatchIndex ? 'highlight-current' : 'highlight-match'; });
+    if (findMatches[currentMatchIndex]) {
+        findMatches[currentMatchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        document.getElementById('matchCount').textContent = `${currentMatchIndex + 1} / ${findMatches.length}`;
+    }
+}
 
-        function updateStatus() {
-            const tab = tabs.find(t => t.id === activeTab);
-            if (!tab) return;
+function findNext() { if (!findMatches.length) { onFindInput(); return; } currentMatchIndex = (currentMatchIndex + 1) % findMatches.length; highlightCurrent(); }
+function findPrev() { if (!findMatches.length) { onFindInput(); return; } currentMatchIndex = (currentMatchIndex - 1 + findMatches.length) % findMatches.length; highlightCurrent(); }
 
-            document.getElementById('currentFileName').textContent = tab.name;
-            const icon = document.getElementById('saveStatusIcon');
-            if (tab.modified) {
-                icon.innerHTML = '<i class="fas fa-circle text-yellow-500"></i>';
-            } else {
-                icon.innerHTML = '<i class="fas fa-check-circle text-green-500"></i>';
-            }
-        }
+function clearFindHighlights() {
+    const editor = getCurrentEditor();
+    if (!editor) return;
+    editor.querySelectorAll('mark.highlight-match, mark.highlight-current').forEach(mark => {
+        const parent = mark.parentNode;
+        if (parent) { parent.replaceChild(document.createTextNode(mark.textContent), mark); parent.normalize(); }
+    });
+}
 
-        function updateTabUI(tab) {
-            const nameEl = document.getElementById('tabName-' + tab.id);
-            if (nameEl) {
-                nameEl.textContent = (tab.modified ? '* ' : '') + tab.name;
-            }
-        }
+function refreshFindHighlights() {
+    const query = document.getElementById('findInput').value;
+    if (!query) return;
+    clearFindHighlights();
+    findMatches = [];
+    currentMatchIndex = -1;
+    performFind(query);
+}
 
-        // --- File Operations ---
+function replaceCurrent() {
+    if (currentMatchIndex < 0 || !findMatches[currentMatchIndex]) return;
+    const replacement = document.getElementById('replaceInput').value;
+    const mark = findMatches[currentMatchIndex];
+    const textNode = document.createTextNode(replacement);
+    mark.parentNode.replaceChild(textNode, mark);
+    findMatches.splice(currentMatchIndex, 1);
+    handleInput();
+    if (findMatches.length > 0) { currentMatchIndex = Math.min(currentMatchIndex, findMatches.length - 1); highlightCurrent(); } else { document.getElementById('matchCount').textContent = 'Tidak ada lagi'; }
+}
 
-        function newFile() {
-            saveCurrentState();
-            tabCounter++;
-            const newId = tabCounter;
-            tabs.push({ id: newId, name: 'Untitled', content: '', modified: false });
-            renderTabs();
-            switchTab(newId);
-            showToast('File baru dibuat');
-        }
+function replaceAll() {
+    const query = document.getElementById('findInput').value;
+    if (!query) return;
+    clearFindHighlights();
+    const replacement = document.getElementById('replaceInput').value;
+    const matchCase = document.getElementById('matchCase').checked;
+    const editor = getCurrentEditor();
+    if (!editor) return;
+    const flags = matchCase ? 'g' : 'gi';
+    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escapedQuery, flags);
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
+    const textNodes = [];
+    let node;
+    while ((node = walker.nextNode())) textNodes.push(node);
+    let count = 0;
+    textNodes.forEach(textNode => {
+        const newText = textNode.textContent.replace(regex, () => { count++; return replacement; });
+        if (newText !== textNode.textContent) textNode.textContent = newText;
+    });
+    handleInput();
+    findMatches = [];
+    currentMatchIndex = -1;
+    document.getElementById('matchCount').textContent = count > 0 ? `${count} diganti` : 'Tidak ditemukan';
+    showToast(count > 0 ? `${count} teks diganti` : 'Tidak ditemukan');
+}
 
-        function saveCurrentState() {
-            const editor = getCurrentEditor();
-            const tab = tabs.find(t => t.id === activeTab);
-            if (editor && tab) {
-                tab.content = editor.innerHTML;
-            }
-        }
+function findKeydown(e) { if (e.key === 'Enter') { e.shiftKey ? findPrev() : findNext(); } if (e.key === 'Escape') { closeFindPanel(); } }
 
-        function switchTab(id) {
-            saveCurrentState();
-            activeTab = id;
+// --- Theme & Settings ---
+function toggleTheme() {
+    document.documentElement.classList.toggle('dark');
+    localStorage.setItem('notepad_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
+    showToast('Tema diganti');
+}
 
-            // Hide all editors
-            document.querySelectorAll('[id^="editor-"]').forEach(e => e.style.display = 'none');
+function changeFontSize(d) {
+    fontSize = Math.max(10, Math.min(30, fontSize + d));
+    document.getElementById('fontSizeDisplay').textContent = fontSize;
+    const editor = getCurrentEditor();
+    if (editor) editor.style.fontSize = fontSize + 'px';
+    localStorage.setItem('notepad_fontSize', fontSize);
+}
 
-            // Create or show editor
-            let editor = getEditor(id);
-            const tab = tabs.find(t => t.id === id);
+function loadSettings() {
+    if (localStorage.getItem('notepad_theme') === 'dark') document.documentElement.classList.add('dark');
+    const savedSize = localStorage.getItem('notepad_fontSize');
+    if (savedSize) { fontSize = parseInt(savedSize); document.getElementById('fontSizeDisplay').textContent = fontSize; }
+    const savedFont = localStorage.getItem('notepad_fontFamily');
+    if (savedFont) { currentFontFamily = savedFont; document.getElementById('fontFamilySelect').value = savedFont; }
+    const savedColor = localStorage.getItem('notepad_fontColor');
+    if (savedColor) { currentFontColor = savedColor; document.getElementById('fontColorPicker').value = savedColor; document.getElementById('colorIndicator').style.background = savedColor; }
+}
 
-            if (!editor) {
-                editor = document.createElement('div');
-                editor.id = 'editor-' + id;
-                editor.className = 'editor-area';
-                editor.contentEditable = true;
-                editor.oninput = handleInput;
-                editor.style.fontSize = fontSize + 'px';
-                editorContainer.appendChild(editor);
-            }
+// --- LocalStorage ---
+function saveToLocalStorage() { saveCurrentState(); localStorage.setItem('notepad_data', JSON.stringify({ tabs, activeTab })); }
 
-            editor.style.display = 'block';
-            editor.innerHTML = tab ? tab.content : '';
-            
-            // Update active tab UI
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.toggle('active', parseInt(t.dataset.tab) === id);
-            });
-
-            updateStats();
-            updateStatus();
-        }
-
-        function addNewTab() {
-            newFile();
-        }
-
-        function closeTab(e, id) {
-            e.stopPropagation();
-            if (tabs.length <= 1) {
-                showToast('Tidak bisa menutup tab terakhir');
-                return;
-            }
-
-            const index = tabs.findIndex(t => t.id === id);
-            tabs.splice(index, 1);
-
-            const editor = getEditor(id);
-            if (editor) editor.remove();
-
-            if (activeTab === id) {
-                switchTab(tabs[0].id);
-            }
-            renderTabs();
-            showToast('Tab ditutup');
-        }
-
-        function renderTabs() {
-            const container = document.getElementById('tabsContainer');
-            // Clear existing tabs except the add button
-            container.querySelectorAll('.tab').forEach(t => t.remove());
-
-            tabs.forEach(tab => {
-                const div = document.createElement('div');
-                div.className = 'tab' + (tab.id === activeTab ? ' active' : '');
-                div.dataset.tab = tab.id;
-                div.onclick = () => switchTab(tab.id);
-                div.innerHTML = `
-                    <i class="fas fa-file-alt text-xs"></i>
-                    <span id="tabName-${tab.id}">${(tab.modified ? '* ' : '') + tab.name}</span>
-                    <span class="tab-close" onclick="closeTab(event, ${tab.id})"><i class="fas fa-times"></i></span>
-                `;
-                container.insertBefore(div, container.querySelector('button'));
-            });
-        }
-
-        // --- Formatting & Tools ---
-
-        function formatText(cmd) {
-            document.execCommand(cmd, false, null);
-            getCurrentEditor().focus();
-        }
-
-        function copyText() {
-            const text = getCurrentEditor().innerText;
-            navigator.clipboard.writeText(text).then(() => showToast('Disalin ke clipboard'));
-        }
-
-        function pasteText() {
-            navigator.clipboard.readText().then(text => {
-                document.execCommand('insertText', false, text);
-                showToast('Teks ditempel');
-            }).catch(() => showToast('Gagal menempel'));
-        }
-
-        function clearContent() {
-            const editor = getCurrentEditor();
-            if (editor && confirm('Hapus semua teks di tab ini?')) {
-                editor.innerHTML = '';
-                handleInput(); // Trigger state update
-                showToast('Konten dihapus');
-            }
-        }
-
-        // --- File IO ---
-
-        function openFileDialog() {
-            document.getElementById('fileInput').click();
-        }
-
-        function handleFileOpen(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            const ext = file.name.split('.').pop().toLowerCase();
-            const reader = new FileReader();
-
-            if (ext === 'pdf') {
-                openPdf(file);
-            } else if (ext === 'docx') {
-                openDocx(file);
-            } else {
-                reader.onload = (ev) => {
-                    createFileTab(file.name, ev.target.result);
-                };
-                reader.readAsText(file);
-            }
-            e.target.value = '';
-        }
-
-        function createFileTab(name, content) {
-            tabCounter++;
-            const newId = tabCounter;
-            tabs.push({ id: newId, name: name, content: content, modified: false });
-            renderTabs();
-            switchTab(newId);
-            showToast('File dibuka: ' + name);
-        }
-
-        async function openPdf(file) {
-            try {
-                pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-                const data = await file.arrayBuffer();
-                const pdf = await pdfjsLib.getDocument({ data }).promise;
-                let text = '';
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const content = await page.getTextContent();
-                    text += content.items.map(item => item.str).join(' ') + '\n';
-                }
-                createFileTab(file.name, text.replace(/\n/g, '<br>'));
-            } catch (err) {
-                showToast('Gagal membuka PDF');
-            }
-        }
-
-        async function openDocx(file) {
-            try {
-                const data = await file.arrayBuffer();
-                const result = await mammoth.convertToHtml({ arrayBuffer: data });
-                createFileTab(file.name, result.value);
-            } catch (err) {
-                showToast('Gagal membuka DOCX');
-            }
-        }
-
-        function saveFile() {
-            saveToLocalStorage();
-            const tab = tabs.find(t => t.id === activeTab);
-            if (tab) tab.modified = false;
-            updateTabUI(tab);
-            updateStatus();
-            showToast('Tersimpan di LocalStorage');
-        }
-
-        function showSaveAsModal() {
-            const tab = tabs.find(t => t.id === activeTab);
-            document.getElementById('saveFileName').value = tab ? tab.name.replace(/\.[^/.]+$/, '') : 'Untitled';
-            document.getElementById('saveAsModal').classList.add('show');
-        }
-
-        function closeSaveAsModal() {
-            document.getElementById('saveAsModal').classList.remove('show');
-        }
-
-        function executeSaveAs() {
-            const name = document.getElementById('saveFileName').value || 'Untitled';
-            const format = document.getElementById('saveFormat').value;
-            const editor = getCurrentEditor();
-            const content = editor.innerHTML;
-            const text = editor.innerText;
-
-            let blob;
-            let filename = name;
-
-            if (format === 'txt') {
-                blob = new Blob([text], { type: 'text/plain' });
-                filename += '.txt';
-            } else if (format === 'rtf') {
-                // Simple RTF wrapper
-                const rtf = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\\f0\\fs24 ${text.replace(/\n/g, '\\par ')}}`;
-                blob = new Blob([rtf], { type: 'application/rtf' });
-                filename += '.rtf';
-            } else if (format === 'html') {
-                blob = new Blob([`<!DOCTYPE html><html><body>${content}</body></html>`], { type: 'text/html' });
-                filename += '.html';
-            } else if (format === 'pdf') {
-                const { jsPDF } = window.jspdf;
-                const doc = new jsPDF();
-                const lines = doc.splitTextToSize(text, 180);
-                doc.text(lines, 10, 10);
-                doc.save(name + '.pdf');
-                closeSaveAsModal();
-                return;
-            }
-
-            // Download
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = filename;
-            a.click();
-            URL.revokeObjectURL(a.href);
-
-            // Update tab info
-            const tab = tabs.find(t => t.id === activeTab);
-            if (tab) {
-                tab.name = filename;
-                tab.modified = false;
+function loadFromLocalStorage() {
+    const data = localStorage.getItem('notepad_data');
+    if (data) {
+        try {
+            const parsed = JSON.parse(data);
+            if (parsed.tabs && parsed.tabs.length > 0) {
+                tabs = parsed.tabs;
+                tabCounter = Math.max(...tabs.map(t => t.id));
                 renderTabs();
-                updateStatus();
+                switchTab(parsed.activeTab || tabs[0].id);
             }
+        } catch (e) { console.error(e); }
+    }
+}
 
-            closeSaveAsModal();
-            showToast('File diunduh: ' + filename);
-        }
+// --- UI Helpers ---
+function toggleDropdown(id) { document.querySelectorAll('.dropdown-content').forEach(d => { if (d.id !== id) d.classList.remove('show'); }); document.getElementById(id).classList.toggle('show'); }
+function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
 
-        // --- Theme & Settings ---
+window.addEventListener('click', (e) => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); });
 
-        function toggleTheme() {
-            document.documentElement.classList.toggle('dark');
-            localStorage.setItem('notepad_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-            showToast('Tema diganti');
-        }
-
-        function changeFontSize(d) {
-            fontSize = Math.max(10, Math.min(30, fontSize + d));
-            document.getElementById('fontSizeDisplay').textContent = fontSize;
-            const editor = getCurrentEditor();
-            if (editor) editor.style.fontSize = fontSize + 'px';
-            localStorage.setItem('notepad_fontSize', fontSize);
-        }
-
-        function loadSettings() {
-            if (localStorage.getItem('notepad_theme') === 'dark') {
-                document.documentElement.classList.add('dark');
-            }
-            const savedSize = localStorage.getItem('notepad_fontSize');
-            if (savedSize) {
-                fontSize = parseInt(savedSize);
-                document.getElementById('fontSizeDisplay').textContent = fontSize;
-                const editor = getCurrentEditor();
-                if(editor) editor.style.fontSize = fontSize + 'px';
-            }
-        }
-
-        // --- LocalStorage Persistence ---
-
-        function saveToLocalStorage() {
-            saveCurrentState();
-            localStorage.setItem('notepad_data', JSON.stringify({ tabs, activeTab }));
-        }
-
-        function loadFromLocalStorage() {
-            const data = localStorage.getItem('notepad_data');
-            if (data) {
-                try {
-                    const parsed = JSON.parse(data);
-                    if (parsed.tabs && parsed.tabs.length > 0) {
-                        tabs = parsed.tabs;
-                        tabCounter = Math.max(...tabs.map(t => t.id));
-                        renderTabs();
-                        switchTab(parsed.activeTab || tabs[0].id);
-                    }
-                } catch (e) {
-                    console.error(e);
-                }
-            }
-        }
-
-        // --- UI Helpers ---
-
-        function toggleDropdown(id) {
-            document.querySelectorAll('.dropdown-content').forEach(d => {
-                if (d.id !== id) d.classList.remove('show');
-            });
-            document.getElementById(id).classList.toggle('show');
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.textContent = msg;
-            t.classList.add('show');
-            setTimeout(() => t.classList.remove('show'), 2000);
-        }
-
-        // Global listener to close dropdowns
-        window.addEventListener('click', (e) => {
-            if (!e.target.closest('.dropdown')) {
-                document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show'));
-            }
-        });
-
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey) {
-                if (e.key === 's') { e.preventDefault(); e.shiftKey ? showSaveAsModal() : saveFile(); }
-                if (e.key === 'n') { e.preventDefault(); newFile(); }
-                if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
-                if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
-            }
-        });
-    </script>
+document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey) {
+        if (e.key === 's') { e.preventDefault(); e.shiftKey ? showSaveAsModal() : saveFile(); }
+        if (e.key === 'n') { e.preventDefault(); newFile(); }
+        if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
+        if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
+        if (e.key === 'h' || e.key === 'f') { e.preventDefault(); toggleFindPanel(); }
+        if (e.key === 'p') { e.preventDefault(); printDocument(); }
+        if (e.key === 'k') { e.preventDefault(); insertLink(); }
+    }
+});
+</script>
 </body>
 </html>
