@@ -1,926 +1,724 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notepad Pro - Pratama Digital</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Merriweather:wght@400;700&family=Playfair+Display:wght@400;700&family=Source+Code+Pro:wght@400;700&family=Nunito:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'inter': ['Inter', 'sans-serif'],
-                        'mono': ['JetBrains Mono', 'monospace']
-                    },
-                    colors: {
-                        // Changed Primary Color to Indigo
-                        primary: {
-                            50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc',
-                            400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca',
-                            800: '#3730a3', 900: '#312e81'
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        :root {
-            --bg: #f0f2f5;
-            --surface: #ffffff;
-            --text: #1a1a2e;
-            --text-secondary: #6b7280;
-            --border: #e0e0e0;
-            --accent: #4f46e5; /* Indigo 600 */
-            --accent-hover: #4338ca; /* Indigo 700 */
-            --shadow: rgba(0, 0, 0, 0.08);
-        }
-        .dark {
-            --bg: #0f0f1a;
-            --surface: #1a1a2e;
-            --text: #e8e8e8;
-            --text-secondary: #9ca3af;
-            --border: #2d2d44;
-            --accent: #818cf8; /* Indigo 400 */
-            --accent-hover: #a5b4fc; /* Indigo 300 */
-            --shadow: rgba(0, 0, 0, 0.4);
-        }
-        html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
-        .app-container { display: flex; flex-direction: column; height: 100vh; }
-        * { scrollbar-width: thin; scrollbar-color: var(--accent) var(--surface); }
-        *::-webkit-scrollbar { width: 8px; height: 8px; }
-        *::-webkit-scrollbar-track { background: var(--surface); }
-        *::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
-        
-        .editor-area {
-            background: var(--surface); color: var(--text); font-family: 'JetBrains Mono', monospace;
-            line-height: 1.6; min-height: 100%; padding: 2rem; outline: none; overflow-y: auto; flex-grow: 1;
-        }
-        .editor-area:empty:before { content: 'Mulai mengetik di sini...'; color: var(--text-secondary); opacity: 0.5; }
-        
-        #htmlSource {
-            background: var(--bg); color: var(--text); font-family: 'JetBrains Mono', monospace;
-            line-height: 1.5; padding: 1rem; outline: none; overflow-y: auto; flex-grow: 1;
-            border: none; resize: none; white-space: pre-wrap; width: 100%; height: 100%;
-        }
+<!doctype html>
+<html lang="id" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notepad Pro</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&family=Roboto:wght@400;700&family=Open+Sans:wght@400;700&family=Lato:wght@400;700&family=Montserrat:wght@400;700&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; font-family: 'Source Sans 3', 'Segoe UI', sans-serif; overflow: hidden; }
 
-        .btn-icon {
-            width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
-            border-radius: 8px; background: transparent; color: var(--text-secondary);
-            transition: all 0.2s ease; border: none; cursor: pointer;
-        }
-        .btn-icon:hover { background: var(--accent); color: white; transform: translateY(-1px); }
-        .btn-icon.active { background: rgba(79, 70, 229, 0.15); color: var(--accent); }
-        
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 2px 10px var(--shadow); }
-        
-        .dropdown { position: relative; }
-        .dropdown-content {
-            display: none; position: absolute; top: 110%; left: 0; background: var(--surface);
-            border: 1px solid var(--border); border-radius: 10px; min-width: 200px; z-index: 1000;
-            box-shadow: 0 10px 25px var(--shadow); overflow: hidden;
-        }
-        .dropdown-content.show { display: block; animation: fadeIn 0.2s ease; }
-        .dropdown-item {
-            padding: 10px 16px; display: flex; align-items: center; gap: 10px; cursor: pointer;
-            transition: all 0.15s ease; color: var(--text); font-size: 0.9rem;
-        }
-        .dropdown-item:hover { background: var(--accent); color: white; }
-        .dropdown-item i { width: 16px; }
-        
-        .tab {
-            padding: 8px 16px; background: transparent; border-bottom: 2px solid transparent;
-            color: var(--text-secondary); cursor: pointer; transition: all 0.2s ease;
-            display: flex; align-items: center; gap: 8px; font-size: 0.875rem;
-        }
-        .tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
-        .tab:hover:not(.active) { background: rgba(0,0,0,0.05); }
-        .dark .tab:hover:not(.active) { background: rgba(255,255,255,0.05); }
-        .tab-close { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; opacity: 0.6; }
-        .tab-close:hover { opacity: 1; background: rgba(0,0,0,0.1); }
-        
-        .toast {
-            position: fixed; bottom: 20px; right: 20px; background: var(--accent); color: white;
-            padding: 12px 24px; border-radius: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            transform: translateY(100px); opacity: 0; transition: all 0.3s ease; z-index: 2000;
-        }
-        .toast.show { transform: translateY(0); opacity: 1; }
-        .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 999; }
-        .modal-backdrop.show { display: flex; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 8px; }
-        .status-bar { background: var(--surface); border-top: 1px solid var(--border); padding: 6px 16px; font-size: 12px; color: var(--text-secondary); display: flex; justify-content: space-between; }
-        .theme-switch { width: 40px; height: 22px; background: var(--border); border-radius: 11px; position: relative; cursor: pointer; transition: background 0.3s; }
-        .theme-switch::after { content: ''; position: absolute; width: 18px; height: 18px; background: white; border-radius: 50%; top: 2px; left: 2px; transition: transform 0.3s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-        .dark .theme-switch { background: var(--accent); }
-        .dark .theme-switch::after { transform: translateX(18px); }
+.app-shell { display: flex; flex-direction: column; height: 100%; width: 100%; background: #f0f0f0; }
 
-        .find-panel { display: none; background: var(--surface); border-bottom: 1px solid var(--border); padding: 8px 16px; gap: 8px; align-items: center; flex-wrap: wrap; }
-        .find-panel.show { display: flex; animation: fadeIn 0.2s ease; }
-        .find-input { padding: 6px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; outline: none; min-width: 160px; }
-        .find-input:focus { border-color: var(--accent); }
-        .find-btn { padding: 6px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; border: 1px solid var(--border); background: var(--bg); color: var(--text); transition: all 0.15s; }
-        .find-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
-        .find-btn.primary { background: var(--accent); color: white; border-color: var(--accent); }
-        .find-btn.primary:hover { background: var(--accent-hover); }
-        .find-close { background: transparent; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px; border-radius: 4px; }
-        .find-close:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
-        .match-count { font-size: 12px; color: var(--text-secondary); }
-        .highlight-match { background: #facc15; color: #1a1a1a; border-radius: 2px; }
-        .highlight-current { background: #f97316; color: white; border-radius: 2px; }
+/* Title Bar */
+.title-bar { background: linear-gradient(180deg, #1a6fb5 0%, #1565a0 100%); color: #fff; padding: 6px 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; letter-spacing: 0.3px; }
+.title-bar svg { opacity: 0.85; }
 
-        .font-select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg); color: var(--text); font-size: 13px; cursor: pointer; outline: none; }
-        .font-select:focus { border-color: var(--accent); }
+/* Ribbon Tabs */
+.ribbon-tabs { display: flex; background: #e8e8e8; border-bottom: 1px solid #bbb; padding: 0 8px; gap: 0; }
+.ribbon-tab { padding: 6px 16px; font-size: 12px; font-weight: 600; cursor: pointer; border: 1px solid transparent; border-bottom: none; border-radius: 4px 4px 0 0; color: #555; position: relative; bottom: -1px; user-select: none; }
+.ribbon-tab:hover { background: #dde8f0; color: #1a6fb5; }
+.ribbon-tab.active { background: #fff; border-color: #bbb; color: #1a6fb5; }
 
-        .color-btn { width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; background: transparent; border: none; cursor: pointer; transition: all 0.2s ease; position: relative; }
-        .color-btn:hover { background: rgba(0,0,0,0.08); }
-        .color-indicator { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 18px; height: 4px; border-radius: 2px; background: #000; }
+/* Ribbon Panel */
+.ribbon-panel { background: #fff; border-bottom: 1px solid #bbb; min-height: 90px; display: flex; align-items: stretch; padding: 4px 8px; gap: 0; overflow-x: auto; }
+.ribbon-group { display: flex; flex-direction: column; align-items: center; padding: 4px 10px; border-right: 1px solid #e0e0e0; }
+.ribbon-group:last-child { border-right: none; }
+.ribbon-group-label { font-size: 10px; color: #888; margin-top: auto; padding-top: 2px; white-space: nowrap; }
+.ribbon-group-btns { display: flex; align-items: center; gap: 2px; flex: 1; }
+.ribbon-group-btns.col { flex-direction: column; align-items: flex-start; }
 
-        @media print {
-            body { overflow: visible !important; background: white !important; }
-            .app-container { height: auto !important; }
-            header, .find-panel, [id="tabsContainer"], .status-bar, footer, #toast, .modal-backdrop, #fileInput, #printStyleBtn, #htmlSource { display: none !important; }
-            .editor-area { border: none !important; box-shadow: none !important; padding: 0 !important; overflow: visible !important; font-size: 12pt !important; min-height: unset !important; }
-            #editorContainer { position: static !important; overflow: visible !important; }
-            .flex-grow { overflow: visible !important; }
-            [id^="editor-"] { display: none !important; }
-            [data-print-active="true"] { display: block !important; }
-        }
+.rb { width: 30px; height: 28px; display: flex; align-items: center; justify-content: center; border: 1px solid transparent; background: transparent; border-radius: 3px; cursor: pointer; color: #444; font-size: 13px; position: relative; }
+.rb:hover { background: #dde8f0; border-color: #b0c8dd; }
+.rb.active { background: #cce0f0; border-color: #90b8d4; }
+.rb-lg { width: auto; height: auto; flex-direction: column; padding: 4px 10px; gap: 2px; font-size: 10px; }
+.rb-lg i { width: 22px; height: 22px; }
 
-        .toolbar-wrapper { position: relative; z-index: 20; }
-    </style>
-</head>
-<body>
-<div class="app-container">
-    <!-- Header -->
-    <header class="px-4 py-2 border-b flex items-center justify-between" style="background: var(--surface); border-color: var(--border);">
-        <div class="flex items-center gap-2">
-            <!-- Logo Updated: Icon changed to pen-nib, Color to Indigo Gradient -->
-            <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white shadow-md">
-                <i class="fas fa-pen-nib text-sm"></i>
-            </div>
-            <span class="font-semibold hidden sm:block">Notepad Pro</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <div class="flex items-center border rounded-lg px-2 py-1" style="border-color: var(--border);">
-                <button onclick="changeFontSize(-1)" class="btn-icon h-6 w-6"><i class="fas fa-minus text-xs"></i></button>
-                <span id="fontSizeDisplay" class="text-xs w-6 text-center font-mono">14</span>
-                <button onclick="changeFontSize(1)" class="btn-icon h-6 w-6"><i class="fas fa-plus text-xs"></i></button>
-            </div>
-            <div class="divider h-4"></div>
-            <div onclick="toggleTheme()" class="theme-switch" title="Ganti Tema"></div>
-        </div>
-    </header>
+.font-size-control { display: flex; align-items: center; gap: 2px; }
+.font-size-btn { width: 20px; height: 24px; font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center; border: 1px solid #bbb; background: #fff; border-radius: 3px; cursor: pointer; color: #444; }
+.font-size-btn:hover { background: #dde8f0; }
+.font-size-val { width: 28px; height: 24px; border: 1px solid #bbb; border-radius: 3px; text-align: center; font-size: 12px; outline: none; pointer-events: none; background: #f8f8f8; }
 
-    <!-- Toolbar -->
-    <div class="toolbar-wrapper px-4 py-2 border-b flex items-center gap-1 flex-wrap" style="background: var(--surface); border-color: var(--border);">
-        <!-- File Dropdown -->
-        <div class="dropdown">
-            <button onclick="toggleDropdown('fileMenu')" class="px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-1 hover:bg-gray-100 dark:hover:bg-gray-800" style="color: var(--text);">
-                File <i class="fas fa-chevron-down text-xs ml-1"></i>
-            </button>
-            <div id="fileMenu" class="dropdown-content">
-                <div class="dropdown-item" onclick="newFile()"><i class="fas fa-file-plus"></i> Baru</div>
-                <div class="dropdown-item" onclick="openFileDialog()"><i class="fas fa-folder-open"></i> Buka</div>
-                <div class="dropdown-item" onclick="saveFile()"><i class="fas fa-save"></i> Simpan</div>
-                <div class="dropdown-item" onclick="showSaveAsModal()"><i class="fas fa-file-export"></i> Simpan Sebagai</div>
-                <div style="height:1px;background:var(--border);margin:4px 0;"></div>
-                <div class="dropdown-item" onclick="printDocument()"><i class="fas fa-print"></i> Cetak / Print</div>
-            </div>
-        </div>
+.font-select { height: 24px; border: 1px solid #bbb; border-radius: 3px; font-size: 12px; padding: 0 4px; outline: none; max-width: 130px; background: #fff; color: #333; }
+.font-select:focus { border-color: #1a6fb5; }
 
-        <div class="divider"></div>
+.color-pick { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 30px; height: 28px; cursor: pointer; border-radius: 3px; border: 1px solid transparent; background: transparent; }
+.color-pick:hover { background: #dde8f0; border-color: #b0c8dd; }
+.color-pick-input { position: absolute; width: 100%; height: 100%; top: 0; left: 0; opacity: 0; cursor: pointer; }
+.color-pick-display { font-weight: 700; pointer-events: none; }
+.color-pick-bar { width: 16px; height: 3px; margin-top: 1px; pointer-events: none; border-radius: 1px; border: 1px solid rgba(0,0,0,0.1); }
 
-        <!-- Quick Tools -->
-        <button onclick="newFile()" class="btn-icon" title="New"><i class="fas fa-file-medical"></i></button>
-        <button onclick="openFileDialog()" class="btn-icon" title="Open"><i class="fas fa-folder-open"></i></button>
-        <button onclick="saveFile()" class="btn-icon" title="Save"><i class="fas fa-save"></i></button>
-        <button onclick="printDocument()" class="btn-icon" id="printStyleBtn" title="Print"><i class="fas fa-print"></i></button>
+.file-btn { 
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; padding: 8px 14px; border: none; background: transparent; border-radius: 4px; cursor: pointer; color: #444; font-size: 10px; min-width: 56px;
+}
+.file-btn:hover { background: #dde8f0; }
+.file-btn svg { width: 22px; height: 22px; color: #1a6fb5; }
+.file-btn span { white-space: nowrap; font-weight: 600; }
 
-        <div class="divider"></div>
+/* Editor */
+.editor-area { flex: 1; overflow: auto; background: #808080; padding: 20px; display: flex; justify-content: center; }
+.editor-page { 
+  width: 100%; max-width: 816px; min-height: 100%; height: fit-content;
+  background: #fff; box-shadow: 0 2px 16px rgba(0,0,0,0.18); 
+  padding: 60px 72px; padding-bottom: 100px; 
+  outline: none; font-size: 14px; line-height: 1.7; color: #222; font-family: 'Source Sans 3', sans-serif; 
+}
+.editor-page:focus { outline: none; }
+.editor-page img { max-width: 100%; }
+.editor-page table { border-collapse: collapse; width: 100%; margin: 8px 0; border: 1px solid #333; }
+.editor-page td, .editor-page th { border: 1px solid #bbb; padding: 6px 10px; min-width: 60px; }
+.editor-page th { background-color: #f0f0f0; font-weight: bold; text-align: center; }
+.editor-page blockquote { border-left: 4px solid #1a6fb5; padding-left: 16px; margin: 12px 0; color: #555; font-style: italic; }
+.editor-page pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: 6px; font-family: 'Fira Code', monospace; font-size: 13px; overflow-x: auto; margin: 8px 0; }
+.editor-page hr { border: none; border-top: 2px solid #ddd; margin: 16px 0; }
+.editor-page ul, .editor-page ol { padding-left: 24px; }
 
-        <!-- Font Family Selector -->
-        <select id="fontFamilySelect" class="font-select" onchange="changeFontFamily(this.value)" title="Font">
-            <option value="'JetBrains Mono', monospace">JetBrains Mono</option>
-            <option value="'Inter', sans-serif">Inter</option>
-            <option value="'Roboto', sans-serif">Roboto</option>
-            <option value="'Open Sans', sans-serif">Open Sans</option>
-            <option value="'Lato', sans-serif">Lato</option>
-            <option value="'Poppins', sans-serif">Poppins</option>
-            <option value="'Nunito', sans-serif">Nunito</option>
-            <option value="'Merriweather', serif">Merriweather</option>
-            <option value="'Playfair Display', serif">Playfair Display</option>
-            <option value="'Source Code Pro', monospace">Source Code Pro</option>
-            <option value="Arial, sans-serif">Arial</option>
-            <option value="Georgia, serif">Georgia</option>
-            <option value="'Times New Roman', serif">Times New Roman</option>
-            <option value="'Courier New', monospace">Courier New</option>
-        </select>
+.autosave-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ade80; display: inline-block; margin-right: 4px; transition: background 0.3s; }
+.autosave-dot.saving { background: #facc15; }
 
-        <div class="divider"></div>
+/* Status Bar */
+.status-bar { background: #1a6fb5; color: #fff; padding: 4px 16px; font-size: 11px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; }
+.status-bar a { color: #b8dcf5; text-decoration: none; font-weight: 600; }
+.status-bar a:hover { color: #fff; text-decoration: underline; }
+.zoom-controls { display: flex; align-items: center; gap: 6px; }
+.zoom-slider { width: 80px; accent-color: #fff; }
 
-        <!-- Formatting -->
-        <button onclick="formatText('bold')" class="btn-icon" title="Bold"><i class="fas fa-bold"></i></button>
-        <button onclick="formatText('italic')" class="btn-icon" title="Italic"><i class="fas fa-italic"></i></button>
-        <button onclick="formatText('underline')" class="btn-icon" title="Underline"><i class="fas fa-underline"></i></button>
-        <button onclick="formatText('strikeThrough')" class="btn-icon" title="Strikethrough"><i class="fas fa-strikethrough"></i></button>
+.toast-container { position: fixed; top: 16px; right: 16px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+.toast { background: #1e293b; color: #fff; padding: 10px 20px; border-radius: 8px; font-size: 13px; animation: toastIn 0.3s ease; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
 
-        <!-- Font Color -->
-        <div style="position:relative; display:inline-flex; align-items:center;">
-            <button class="color-btn" title="Warna Font" onclick="triggerColorPicker()">
-                <i class="fas fa-font" style="font-size:14px; color: var(--text-secondary);"></i>
-                <span class="color-indicator" id="colorIndicator"></span>
-            </button>
-            <input type="color" id="fontColorPicker" value="#000000" style="position:absolute;opacity:0;width:0;height:0;" onchange="applyFontColor(this.value)" oninput="applyFontColor(this.value)">
-        </div>
+.find-bar { display: none; background: #f8f8f8; border-bottom: 1px solid #ddd; padding: 6px 12px; align-items: center; gap: 8px; }
+.find-bar.show { display: flex; }
+.find-bar input { height: 26px; border: 1px solid #bbb; border-radius: 3px; padding: 0 8px; font-size: 12px; outline: none; background: #fff; color: #333; }
+.find-bar input:focus { border-color: #1a6fb5; }
+.find-bar button { height: 26px; padding: 0 10px; border: 1px solid #bbb; background: #fff; border-radius: 3px; font-size: 11px; cursor: pointer; color: #333; }
+.find-bar button:hover { background: #e0ecf5; }
 
-        <!-- Highlight Color -->
-        <div style="position:relative; display:inline-flex; align-items:center;" title="Highlight Teks">
-            <button class="color-btn" title="Highlight" onclick="triggerHighlightPicker()">
-                <i class="fas fa-highlighter" style="font-size:13px; color: var(--text-secondary);"></i>
-                <span class="color-indicator" id="highlightIndicator" style="background:#facc15;"></span>
-            </button>
-            <input type="color" id="highlightPicker" value="#facc15" style="position:absolute;opacity:0;width:0;height:0;" onchange="applyHighlight(this.value)" oninput="applyHighlight(this.value)">
-        </div>
+.modal-body-input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; margin-top: 4px; background: #fff; color: #333; }
+.modal-body-label { font-size: 13px; font-weight: 600; color: #333; display: block; margin-top: 12px; }
+.modal-body-label:first-child { margin-top: 0; }
 
-        <div class="divider"></div>
+.saveas-dropdown {
+  position: fixed; z-index: 999; background: #fff; border: 1px solid #ccc; border-radius: 6px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.15); overflow: hidden; min-width: 160px; display: none;
+}
+.saveas-dropdown.show { display: block; }
+.saveas-dropdown button {
+  display: flex; align-items: center; gap: 8px; width: 100%; text-align: left;
+  padding: 9px 16px; border: none; background: none; cursor: pointer; font-size: 12px; color: #333;
+}
+.saveas-dropdown button:hover { background: #e0ecf5; }
 
-        <!-- Link Tools -->
-        <button onclick="insertLink()" class="btn-icon" title="Sisipkan Link"><i class="fas fa-link"></i></button>
-        <button onclick="removeLink()" class="btn-icon" title="Hapus Link"><i class="fas fa-unlink"></i></button>
+/* ========== DARK MODE ========== */
+.app-shell.dark { background: #1a1b2e; }
+.app-shell.dark .title-bar { background: linear-gradient(180deg, #0f2847 0%, #0b1f3a 100%); }
+.app-shell.dark .ribbon-tabs { background: #1e1f35; border-bottom-color: #2d2e4a; }
+.app-shell.dark .ribbon-tab { color: #8890b0; }
+.app-shell.dark .ribbon-tab:hover { background: #252645; color: #6ea8d8; }
+.app-shell.dark .ribbon-tab.active { background: #252645; border-color: #2d2e4a; color: #6ea8d8; }
+.app-shell.dark .ribbon-panel { background: #252645; border-bottom-color: #2d2e4a; }
+.app-shell.dark .ribbon-group { border-right-color: #2d2e4a; }
+.app-shell.dark .ribbon-group-label { color: #5a5f80; }
+.app-shell.dark .rb { color: #c0c5e0; }
+.app-shell.dark .rb:hover { background: #1e1f35; border-color: #3a3c60; }
+.app-shell.dark .rb.active { background: #1a2a50; border-color: #2a4a80; }
+.app-shell.dark .rb-lg { color: #c0c5e0; }
+.app-shell.dark .font-size-btn { border-color: #3a3c60; background: #1e1f35; color: #c0c5e0; }
+.app-shell.dark .font-size-btn:hover { background: #2d2e4a; }
+.app-shell.dark .font-size-val { border-color: #3a3c60; background: #1e1f35; color: #c0c5e0; }
+.app-shell.dark .font-select { border-color: #3a3c60; background: #1e1f35; color: #c0c5e0; }
+.app-shell.dark .font-select option { background: #252645; color: #c0c5e0; }
+.app-shell.dark .color-pick { color: #c0c5e0; }
+.app-shell.dark .color-pick:hover { background: #1e1f35; border-color: #3a3c60; }
+.app-shell.dark .file-btn { color: #c0c5e0; }
+.app-shell.dark .file-btn:hover { background: #1e1f35; }
+.app-shell.dark .file-btn svg { color: #6ea8d8; }
+.app-shell.dark .editor-area { background: #2a2b3d; }
+.app-shell.dark .status-bar { background: #0b1f3a; }
+.app-shell.dark .status-bar a { color: #6ea8d8; }
+.app-shell.dark .status-bar a:hover { color: #a0cfff; }
+.app-shell.dark .find-bar { background: #252645; border-bottom-color: #2d2e4a; }
+.app-shell.dark .find-bar input { border-color: #3a3c60; background: #1e1f35; color: #c0c5e0; }
+.app-shell.dark .find-bar button { border-color: #3a3c60; background: #1e1f35; color: #c0c5e0; }
+.app-shell.dark .find-bar button:hover { background: #2d2e4a; }
+.app-shell.dark .saveas-dropdown { background: #252645; border-color: #3a3c60; }
+.app-shell.dark .saveas-dropdown button { color: #c0c5e0; }
+.app-shell.dark .saveas-dropdown button:hover { background: #1e1f35; }
+.app-shell.dark #inlineModal > div { background: #252645; }
+.app-shell.dark #modalTitle { color: #6ea8d8; }
+.app-shell.dark .modal-body-label { color: #c0c5e0; }
+.app-shell.dark .modal-body-input { background: #1e1f35; border-color: #3a3c60; color: #c0c5e0; }
+.app-shell.dark #modalCancel { background: #1e1f35; border-color: #3a3c60; color: #c0c5e0; }
+.app-shell.dark #modalOk { background: #1a6fb5; }
+.app-shell.dark .toast { background: #252645; border: 1px solid #3a3c60; }
+/* Editor page tetap putih di dark mode - tidak di-override */
+.app-shell.dark .editor-page { background: #fff; color: #222; }
 
-        <div class="divider"></div>
+@media (max-width: 768px) {
+  .editor-page { padding: 24px 20px; }
+  .ribbon-group { padding: 4px 6px; }
+  .rb-lg { display: none; }
+  .status-bar-links { display: none; }
+}
+  </style>
+ </head>
+ <body class="h-full">
+  <div class="app-shell" id="app">
 
-        <!-- Alignment & List -->
-        <button onclick="formatText('justifyLeft')" class="btn-icon" title="Align Left"><i class="fas fa-align-left"></i></button>
-        <button onclick="formatText('justifyCenter')" class="btn-icon" title="Align Center"><i class="fas fa-align-center"></i></button>
-        <button onclick="formatText('justifyRight')" class="btn-icon" title="Align Right"><i class="fas fa-align-right"></i></button>
-        <button onclick="formatText('insertUnorderedList')" class="btn-icon" title="List"><i class="fas fa-list-ul"></i></button>
+   <div class="title-bar">
+    <i data-lucide="file-text" style="width:16px;height:16px;"></i>
+    <span id="app-title">Notepad Pro</span>
+    <span style="opacity:0.7;font-weight:400;font-size:12px;">— Untitled Document</span>
+    <span style="margin-left:auto;display:flex;align-items:center;gap:4px;font-size:11px;opacity:0.85;">
+      <span class="autosave-dot" id="autosaveDot"></span>
+      <span id="autosaveLabel">Tersimpan</span>
+    </span>
+   </div>
+   
+   <div class="ribbon-tabs" id="ribbonTabs">
+    <div class="ribbon-tab" data-tab="file">File</div>
+    <div class="ribbon-tab active" data-tab="home">Home</div>
+    <div class="ribbon-tab" data-tab="insert">Insert</div>
+    <div class="ribbon-tab" data-tab="format">Format</div>
+    <div class="ribbon-tab" data-tab="view">View</div>
+    <div class="ribbon-tab" data-tab="help">Help</div>
+   </div>
 
-        <div class="divider"></div>
-
-        <!-- Find & Replace Toggle -->
-        <button onclick="toggleFindPanel()" class="btn-icon" title="Find & Replace (Ctrl+H)" id="findToggleBtn"><i class="fas fa-search"></i></button>
-        
-        <!-- HTML Mode Toggle -->
-        <button onclick="toggleHtmlMode()" class="btn-icon" title="Mode HTML (Code View)" id="htmlModeBtn"><i class="fas fa-code"></i></button>
-
-        <div class="divider"></div>
-
-        <!-- Utility -->
-        <button onclick="copyText()" class="btn-icon" title="Copy"><i class="fas fa-copy"></i></button>
-        <button onclick="pasteText()" class="btn-icon" title="Paste"><i class="fas fa-paste"></i></button>
-        <button onclick="clearContent()" class="btn-icon hover:bg-red-500 hover:text-white" title="Clear All" style="color: #ef4444;"><i class="fas fa-trash-alt"></i></button>
-        <div class="divider"></div>
-        <button onclick="formatText('undo')" class="btn-icon" title="Undo"><i class="fas fa-undo"></i></button>
-        <button onclick="formatText('redo')" class="btn-icon" title="Redo"><i class="fas fa-redo"></i></button>
+   <!-- FILE TAB -->
+   <div id="ribbon-file" class="ribbon-panel" style="display:none;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns" style="gap:4px;">
+      <button class="file-btn" onclick="newDocument()" title="Dokumen Baru">
+        <i data-lucide="file-plus"></i><span>Baru</span>
+      </button>
+      <button class="file-btn" onclick="openFile()" title="Buka File">
+        <i data-lucide="folder-open"></i><span>Buka</span>
+      </button>
+     </div>
+     <span class="ribbon-group-label">Dokumen</span>
     </div>
-
-    <!-- Find & Replace Panel -->
-    <div id="findPanel" class="find-panel">
-        <i class="fas fa-search" style="color:var(--text-secondary); font-size:13px;"></i>
-        <input type="text" id="findInput" class="find-input" placeholder="Cari teks..." oninput="onFindInput()" onkeydown="findKeydown(event)">
-        <input type="text" id="replaceInput" class="find-input" placeholder="Ganti dengan...">
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;color:var(--text-secondary);cursor:pointer;">
-            <input type="checkbox" id="matchCase" onchange="onFindInput()"> Case-sensitive
-        </label>
-        <span class="match-count" id="matchCount"></span>
-        <button class="find-btn" onclick="findPrev()" title="Sebelumnya"><i class="fas fa-chevron-up"></i></button>
-        <button class="find-btn" onclick="findNext()" title="Berikutnya"><i class="fas fa-chevron-down"></i></button>
-        <button class="find-btn" onclick="replaceCurrent()">Ganti</button>
-        <button class="find-btn primary" onclick="replaceAll()">Ganti Semua</button>
-        <button class="find-close" onclick="closeFindPanel()" title="Tutup"><i class="fas fa-times"></i></button>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns" style="gap:4px;">
+      <button class="file-btn" onclick="quickSave()" title="Simpan ke Local Storage">
+        <i data-lucide="save"></i><span>Simpan</span>
+      </button>
+      <button class="file-btn" onclick="showSaveAsDropdown(event)" title="Simpan Sebagai...">
+        <i data-lucide="download"></i><span>Simpan Sbg</span>
+      </button>
+     </div>
+     <span class="ribbon-group-label">Simpan</span>
     </div>
-
-    <!-- Tabs -->
-    <div class="px-4 flex items-center border-b bg-opacity-50 overflow-x-auto" style="background: var(--bg); border-color: var(--border);" id="tabsContainer">
-        <div class="tab active" data-tab="0" onclick="switchTab(0)">
-            <i class="fas fa-file-alt text-xs"></i>
-            <span id="tabName-0">Untitled</span>
-            <span class="tab-close" onclick="closeTab(event, 0)"><i class="fas fa-times"></i></span>
-        </div>
-        <button onclick="addNewTab()" class="btn-icon h-8 w-8 mx-1" title="New Tab"><i class="fas fa-plus"></i></button>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns" style="gap:4px;">
+      <button class="file-btn" onclick="printDoc()" title="Cetak">
+        <i data-lucide="printer"></i><span>Cetak</span>
+      </button>
+      <button class="file-btn" onclick="deleteAllContent()" title="Hapus Semua Konten" style="color:#c00;">
+        <i data-lucide="trash-2" style="color:#c00;"></i><span>Kosongkan</span>
+      </button>
+     </div>
+     <span class="ribbon-group-label">Lainnya</span>
     </div>
+   </div>
 
-    <!-- Main Editor Area -->
-    <div class="flex-grow overflow-hidden relative" style="background: var(--bg);">
-        <div id="editorContainer" class="absolute inset-0 overflow-y-auto">
-            <div id="editor-0" class="editor-area" contenteditable="true" oninput="handleInput()"></div>
-            <textarea id="htmlSource" class="editor-area" style="display:none;" oninput="handleSourceInput()" spellcheck="false"></textarea>
-        </div>
+   <!-- HOME TAB -->
+   <div id="ribbon-home" class="ribbon-panel" style="display:flex;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="execCmd('undo')" title="Undo (Ctrl+Z)">
+        <i data-lucide="undo-2" style="width:20px;height:20px;"></i>Undo
+      </button>
+      <button class="rb rb-lg" onclick="execCmd('redo')" title="Redo (Ctrl+Y)">
+        <i data-lucide="redo-2" style="width:20px;height:20px;"></i>Redo
+      </button>
+     </div>
+     <span class="ribbon-group-label">Riwayat</span>
     </div>
-
-    <!-- Status Bar -->
-    <div class="status-bar">
-        <div class="flex items-center gap-4">
-            <span id="currentFileName">Untitled</span>
-            <span id="saveStatusIcon" class="text-green-500"><i class="fas fa-check-circle"></i></span>
-            <span id="modeIndicator" class="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-0.5 rounded">Visual</span>
-        </div>
-        <div class="flex items-center gap-4 font-mono">
-            <span><i class="fas fa-font mr-1"></i> <span id="wordCount">0</span> Kata</span>
-            <span><i class="fas fa-text-width mr-1"></i> <span id="charCount">0</span> Karakter</span>
-        </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="pasteContent()" title="Paste"><i data-lucide="clipboard-paste" style="width:20px;height:20px;"></i>Paste</button>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+       <button class="rb" onclick="execCmd('cut')" title="Cut"><i data-lucide="scissors" style="width:15px;height:15px;"></i></button>
+       <button class="rb" onclick="execCmd('copy')" title="Copy"><i data-lucide="copy" style="width:15px;height:15px;"></i></button>
+      </div>
+     </div><span class="ribbon-group-label">Clipboard</span>
     </div>
-
-    <!-- Footer -->
-    <footer class="text-center py-2 text-xs border-t" style="background: var(--surface); border-color: var(--border); color: var(--text-secondary);">
-        &copy; 2024 <a href="https://pratamadigital.com" target="_blank" class="font-semibold hover:text-primary-600">pratamadigital.com</a>. 
-        Licensed under <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" class="font-semibold hover:text-primary-600">AGPL-3.0</a>.
-    </footer>
-</div>
-
-<!-- Save As Modal -->
-<div id="saveAsModal" class="modal-backdrop">
-    <div class="card p-6 w-full max-w-sm mx-4" style="background: var(--surface);">
-        <h3 class="font-bold mb-4 text-lg" style="color: var(--text);">Simpan Sebagai</h3>
-        <div class="space-y-3">
-            <input type="text" id="saveFileName" placeholder="Nama file" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
-            <select id="saveFormat" class="w-full px-3 py-2 rounded-lg border focus:outline-none focus:border-primary-500" style="background: var(--bg); border-color: var(--border); color: var(--text);">
-                <option value="txt">Text File (.txt)</option>
-                <option value="rtf">Rich Text (.rtf)</option>
-                <option value="pdf">PDF Document (.pdf)</option>
-                <option value="html">HTML File (.html)</option>
-            </select>
-        </div>
-        <div class="flex justify-end gap-2 mt-6">
-            <button onclick="closeSaveAsModal()" class="px-4 py-2 rounded-lg text-sm font-medium" style="background: var(--border); color: var(--text);">Batal</button>
-            <button onclick="executeSaveAs()" class="px-4 py-2 rounded-lg text-sm font-medium text-white" style="background: var(--accent);">Simpan</button>
-        </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns" style="flex-wrap:wrap;gap:3px;">
+      <select class="font-select" id="fontFamily" onchange="execCmdVal('fontName', this.value)">
+        <option value="Source Sans 3">Source Sans 3</option>
+        <option value="Arial">Arial</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Times New Roman">Times New Roman</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Verdana">Verdana</option>
+        <option value="Roboto">Roboto</option>
+        <option value="Open Sans">Open Sans</option>
+        <option value="Lato">Lato</option>
+        <option value="Montserrat">Montserrat</option>
+        <option value="Poppins">Poppins</option>
+      </select>
+      <div class="font-size-control">
+        <button class="font-size-btn" onclick="changeFontSize(-1)">-</button>
+        <input type="text" class="font-size-val" id="fontSizeVal" value="14" readonly>
+        <button class="font-size-btn" onclick="changeFontSize(1)">+</button>
+      </div>
+     </div>
+     <div class="ribbon-group-btns" style="gap:1px;">
+      <button class="rb" id="btn-bold" onclick="execCmd('bold')" title="Bold"><b>B</b></button>
+      <button class="rb" id="btn-italic" onclick="execCmd('italic')" title="Italic"><i>I</i></button>
+      <button class="rb" id="btn-underline" onclick="execCmd('underline')" title="Underline"><u>U</u></button>
+      <button class="rb" id="btn-strikethrough" onclick="execCmd('strikeThrough')" title="Strikethrough"><s>S</s></button>
+      <div class="rb color-pick" title="Text Color">
+        <span class="color-pick-display" style="color:var(--fc,#e00);">A</span>
+        <input type="color" class="color-pick-input" id="foreColor" value="#ee0000" onchange="applyColor('foreColor', this.value)">
+      </div>
+      <div class="rb color-pick" title="Highlight">
+        <span class="color-pick-display" style="background: transparent;">ab</span>
+        <div class="color-pick-bar" id="hlBar" style="background:var(--hc,#ff0);"></div>
+        <input type="color" class="color-pick-input" id="hiliteColor" value="#ffff00" onchange="applyColor('hiliteColor', this.value)">
+      </div>
+     </div><span class="ribbon-group-label">Font</span>
     </div>
-</div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns" style="flex-wrap:wrap;gap:1px;">
+      <button class="rb" onclick="execCmd('justifyLeft')" title="Align Left"><i data-lucide="align-left" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('justifyCenter')" title="Center"><i data-lucide="align-center" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('justifyRight')" title="Align Right"><i data-lucide="align-right" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('justifyFull')" title="Justify"><i data-lucide="align-justify" style="width:14px;height:14px;"></i></button>
+     </div>
+     <div class="ribbon-group-btns" style="gap:1px;">
+      <button class="rb" onclick="execCmd('insertUnorderedList')" title="Bullet List"><i data-lucide="list" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('insertOrderedList')" title="Numbered List"><i data-lucide="list-ordered" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('outdent')" title="Decrease Indent"><i data-lucide="outdent" style="width:14px;height:14px;"></i></button>
+      <button class="rb" onclick="execCmd('indent')" title="Increase Indent"><i data-lucide="indent" style="width:14px;height:14px;"></i></button>
+     </div><span class="ribbon-group-label">Paragraf</span>
+    </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns col" style="gap:2px;">
+      <select class="font-select" id="blockFormat" onchange="formatBlock(this.value)" style="max-width:140px;">
+        <option value="" disabled selected>Styles</option>
+        <option value="<h1>">Heading 1</option>
+        <option value="<h2>">Heading 2</option>
+        <option value="<h3>">Heading 3</option>
+        <option value="<h4>">Heading 4</option>
+        <option value="<p>">Normal</option>
+        <option value="<blockquote>">Quote</option>
+        <option value="<pre>">Code Block</option>
+      </select>
+      <button class="rb" onclick="execCmd('removeFormat')" title="Clear Formatting" style="width:auto;padding:0 8px;font-size:11px;"><i data-lucide="eraser" style="width:13px;height:13px;"></i></button>
+     </div><span class="ribbon-group-label">Styles</span>
+    </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="toggleFind()" title="Find &amp; Replace"><i data-lucide="search" style="width:18px;height:18px;"></i>Cari</button>
+      <button class="rb rb-lg" onclick="selectAll()" title="Select All"><i data-lucide="text-select" style="width:18px;height:18px;"></i>Pilih Semua</button>
+     </div><span class="ribbon-group-label">Edit</span>
+    </div>
+   </div>
 
-<!-- Toast -->
-<div id="toast" class="toast">Message</div>
+   <!-- INSERT TAB -->
+   <div id="ribbon-insert" class="ribbon-panel" style="display:none;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="insertTableUI()" title="Insert Table"><i data-lucide="table" style="width:20px;height:20px;"></i>Tabel</button>
+      <button class="rb rb-lg" onclick="insertImageUI()" title="Insert Image"><i data-lucide="image" style="width:20px;height:20px;"></i>Gambar</button>
+      <button class="rb rb-lg" onclick="insertLinkUI()" title="Insert Link"><i data-lucide="link" style="width:20px;height:20px;"></i>Link</button>
+      <button class="rb rb-lg" onclick="execCmd('unlink')" title="Remove Link"><i data-lucide="unlink" style="width:20px;height:20px;"></i>Hapus Link</button>
+     </div><span class="ribbon-group-label">Sisipkan</span>
+    </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="execCmd('insertHorizontalRule')" title="Horizontal Rule"><i data-lucide="minus" style="width:20px;height:20px;"></i>Garis</button>
+      <button class="rb rb-lg" onclick="insertDateTime()" title="Date &amp; Time"><i data-lucide="calendar" style="width:20px;height:20px;"></i>Tanggal</button>
+      <button class="rb rb-lg" onclick="insertSpecialChar()" title="Symbol"><i data-lucide="hash" style="width:20px;height:20px;"></i>Simbol</button>
+     </div><span class="ribbon-group-label">Elemen</span>
+    </div>
+   </div>
 
-<!-- File Input -->
-<input type="file" id="fileInput" accept=".txt,.rtf,.doc,.docx,.pdf,.html" class="hidden" onchange="handleFileOpen(event)">
+   <!-- FORMAT TAB -->
+   <div id="ribbon-format" class="ribbon-panel" style="display:none;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns col" style="gap:4px;">
+      <div style="display:flex;gap:4px;align-items:center;font-size:12px;">
+       <label>Line Height:</label>
+       <select class="font-select" onchange="setLineHeight(this.value)" style="max-width:70px;">
+        <option value="1.2">1.2</option>
+        <option value="1.5">1.5</option>
+        <option value="1.7" selected>1.7</option>
+        <option value="2.0">2.0</option>
+        <option value="2.5">2.5</option>
+       </select>
+      </div>
+      <div style="display:flex;gap:4px;align-items:center;font-size:12px;">
+       <label>Page BG:</label>
+       <input type="color" value="#ffffff" onchange="document.getElementById('editor').style.background=this.value" style="width:28px;height:22px;border:1px solid #bbb;border-radius:3px;">
+      </div>
+     </div><span class="ribbon-group-label">Halaman</span>
+    </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="execCmd('removeFormat')" title="Clear All Formatting"><i data-lucide="paintbrush" style="width:20px;height:20px;"></i>Hapus Format</button>
+     </div><span class="ribbon-group-label">Format</span>
+    </div>
+   </div>
 
-<script>
-// State
-let tabs = [{ id: 0, name: 'Untitled', content: '', modified: false }];
-let activeTab = 0;
-let tabCounter = 0;
-let fontSize = 14;
-let currentFontFamily = "'JetBrains Mono', monospace";
-let currentFontColor = '#000000';
-let currentHighlight = '#facc15';
-let isHtmlMode = false;
+   <!-- VIEW TAB -->
+   <div id="ribbon-view" class="ribbon-panel" style="display:none;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="toggleFullscreen()" title="Fullscreen"><i data-lucide="maximize" style="width:20px;height:20px;"></i>Layar Penuh</button>
+      <button class="rb rb-lg" onclick="toggleDark()" title="Dark Mode"><i data-lucide="moon" style="width:20px;height:20px;"></i>Mode Gelap</button>
+      <button class="rb rb-lg" id="btnWordWrap" onclick="toggleWordWrap()" title="Word Wrap"><i data-lucide="wrap-text" style="width:20px;height:20px;"></i>Word Wrap</button>
+     </div><span class="ribbon-group-label">Tampilan</span>
+    </div>
+   </div>
 
-// Find/Replace state
-let findMatches = [];
-let currentMatchIndex = -1;
-let findActive = false;
+   <!-- HELP TAB -->
+   <div id="ribbon-help" class="ribbon-panel" style="display:none;">
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="window.open('help.html','_blank')" title="Buka Halaman Bantuan"><i data-lucide="help-circle" style="width:20px;height:20px;"></i>Bantuan</button>
+      <button class="rb rb-lg" onclick="window.open('https://www.gnu.org/licenses/agpl-3.0.html','_blank')" title="Lisensi AGPL v3"><i data-lucide="scale" style="width:20px;height:20px;"></i>Lisensi</button>
+     </div><span class="ribbon-group-label">Info</span>
+    </div>
+    <div class="ribbon-group">
+     <div class="ribbon-group-btns">
+      <button class="rb rb-lg" onclick="window.open('https://github.com','_blank')" title="GitHub Repository"><i data-lucide="github" style="width:20px;height:20px;"></i>GitHub</button>
+      <button class="rb rb-lg" onclick="window.open('https://pratamadigital.com','_blank')" title="Website"><i data-lucide="globe" style="width:20px;height:20px;"></i>Website</button>
+     </div><span class="ribbon-group-label">Tautan</span>
+    </div>
+   </div>
 
-const editorContainer = document.getElementById('editorContainer');
-const htmlSource = document.getElementById('htmlSource');
-const modeIndicator = document.getElementById('modeIndicator');
+   <!-- Find/Replace Bar -->
+   <div class="find-bar" id="findBar">
+    <i data-lucide="search" style="width:14px;height:14px;color:#888;"></i>
+    <input type="text" id="findInput" placeholder="Cari..." style="width:140px;" onkeydown="if(event.key==='Enter')findText()">
+    <input type="text" id="replaceInput" placeholder="Ganti dengan..."> 
+    <button onclick="findText()">Cari</button>
+    <button onclick="replaceText()">Ganti</button>
+    <button onclick="replaceAll()">Semua</button>
+    <button onclick="toggleFind()" style="border:none;background:none;cursor:pointer;"><i data-lucide="x" style="width:14px;height:14px;"></i></button>
+   </div>
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadSettings();
-    loadFromLocalStorage();
-    document.getElementById('colorIndicator').style.background = currentFontColor;
+   <!-- Editor Area -->
+   <div class="editor-area" id="editorArea">
+    <div id="editor" class="editor-page" contenteditable="true" spellcheck="true"></div>
+   </div>
+
+   <!-- Status Bar -->
+   <div class="status-bar">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+     <span id="wordCount">Kata: 0</span>
+     <span id="charCount">Karakter: 0</span>
+     <span style="opacity:0.4;">|</span>
+     <span id="lastSavedInfo" style="font-size:10px;opacity:0.8;">—</span>
+    </div>
+    <div class="status-bar-links" style="display:flex;align-items:center;gap:12px;">
+     <a href="https://pratamadigital.com" target="_blank" rel="noopener noreferrer">pratamadigital.com</a>
+     <span style="opacity:0.4;">|</span>
+     <a href="https://github.com" target="_blank" rel="noopener noreferrer">GitHub</a>
+     <span style="opacity:0.4;">|</span>
+     <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">AGPL v3</a>
+     <span style="opacity:0.4;">|</span>
+     <div class="zoom-controls">
+      <button onclick="zoomOut()" style="color:#fff;background:none;border:none;cursor:pointer;display:flex;"><i data-lucide="zoom-out" style="width:13px;height:13px;"></i></button>
+      <input type="range" class="zoom-slider" id="zoomSlider" min="50" max="200" value="100" oninput="setZoom(this.value)">
+      <button onclick="zoomIn()" style="color:#fff;background:none;border:none;cursor:pointer;display:flex;"><i data-lucide="zoom-in" style="width:13px;height:13px;"></i></button>
+      <span id="zoomVal" style="font-size:11px;min-width:32px;">100%</span>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <div class="toast-container" id="toasts"></div>
+
+  <div class="saveas-dropdown" id="saveAsDropdown">
+   <button onclick="downloadAs('txt')"><i data-lucide="file-text" style="width:14px;height:14px;"></i> Simpan sebagai .TXT</button>
+   <button onclick="downloadAs('html')"><i data-lucide="code" style="width:14px;height:14px;"></i> Simpan sebagai .HTML</button>
+   <button onclick="downloadAs('pdf')"><i data-lucide="file" style="width:14px;height:14px;"></i> Simpan sebagai .PDF</button>
+  </div>
+
+  <input type="file" id="fileInput" style="display:none;" accept=".txt,.html,.htm" onchange="handleFileOpen(event)">
+  <input type="file" id="imageInput" style="display:none;" accept="image/*" onchange="handleImageUpload(event)">
+
+  <div id="inlineModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;">
+   <div style="background:#fff;border-radius:10px;padding:24px;min-width:320px;max-width:420px;box-shadow:0 8px 32px rgba(0,0,0,0.25);">
+    <h3 id="modalTitle" style="margin-bottom:12px;font-size:16px;font-weight:700;color:#1a6fb5;"></h3>
+    <div id="modalBody"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px;">
+     <button id="modalCancel" style="padding:6px 16px;border:1px solid #ccc;background:#f5f5f5;border-radius:5px;cursor:pointer;font-size:13px;">Batal</button>
+     <button id="modalOk" style="padding:6px 16px;border:none;background:#1a6fb5;color:#fff;border-radius:5px;cursor:pointer;font-size:13px;">OK</button>
+    </div>
+   </div>
+  </div>
+
+  <script>
+let isDark = false;
+let currentZoom = 100;
+let savedSelection = null;
+let currentFontSize = 14;
+let autosaveTimer = null;
+const editor = document.getElementById('editor');
+const appShell = document.getElementById('app');
+const STORAGE_KEY = 'notepad_pro_content';
+const STORAGE_TS_KEY = 'notepad_pro_timestamp';
+
+lucide.createIcons();
+
+(function loadFromStorage() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    editor.innerHTML = saved;
+    const ts = localStorage.getItem(STORAGE_TS_KEY);
+    if (ts) {
+      document.getElementById('lastSavedInfo').textContent = 'Terakhir disimpan: ' + ts;
+    }
+  }
+  updateCounts();
+})();
+
+// Ribbon Tab Switching — Home active by default
+document.querySelectorAll('.ribbon-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.ribbon-tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.ribbon-panel').forEach(p => p.style.display = 'none');
+    const panel = document.getElementById('ribbon-' + tab.dataset.tab);
+    if (panel) panel.style.display = 'flex';
+  });
 });
 
-// --- Core ---
-function getEditor(id) { return document.getElementById('editor-' + id); }
-function getCurrentEditor() { return getEditor(activeTab); }
+// Auto-save
+function scheduleAutosave() {
+  clearTimeout(autosaveTimer);
+  const dot = document.getElementById('autosaveDot');
+  const label = document.getElementById('autosaveLabel');
+  dot.classList.add('saving');
+  label.textContent = 'Menyimpan...';
+  autosaveTimer = setTimeout(() => { performAutosave(); }, 1500);
+}
+function performAutosave() {
+  localStorage.setItem(STORAGE_KEY, editor.innerHTML);
+  const ts = new Date().toLocaleString('id-ID');
+  localStorage.setItem(STORAGE_TS_KEY, ts);
+  const dot = document.getElementById('autosaveDot');
+  const label = document.getElementById('autosaveLabel');
+  dot.classList.remove('saving');
+  label.textContent = 'Tersimpan';
+  document.getElementById('lastSavedInfo').textContent = 'Terakhir disimpan: ' + ts;
+}
+editor.addEventListener('input', () => { updateCounts(); scheduleAutosave(); });
 
-function handleInput() {
-    const editor = getCurrentEditor();
-    if (!editor) return;
-    const tab = tabs.find(t => t.id === activeTab);
-    if (tab) { tab.content = editor.innerHTML; tab.modified = true; updateTabUI(tab); }
-    updateStats();
-    updateStatus();
-    clearTimeout(window.autoSaveTimer);
-    window.autoSaveTimer = setTimeout(saveToLocalStorage, 1500);
-    if (findActive) refreshFindHighlights();
+// Commands
+function execCmd(cmd) { editor.focus(); document.execCommand(cmd, false, null); updateCounts(); }
+function execCmdVal(cmd, val) { editor.focus(); document.execCommand(cmd, false, val); updateCounts(); }
+function formatBlock(val) { editor.focus(); document.execCommand('formatBlock', false, val); document.getElementById('blockFormat').selectedIndex = 0; }
+
+function pasteContent() {
+  if (navigator.clipboard && navigator.clipboard.readText) {
+    navigator.clipboard.readText().then(text => {
+      editor.focus(); document.execCommand('insertText', false, text); showToast('Ditempel dari clipboard');
+    }).catch(() => { showToast('Akses clipboard ditolak. Gunakan Ctrl+V'); editor.focus(); document.execCommand('paste'); });
+  } else { showToast('Gunakan Ctrl+V untuk menempel'); }
 }
 
-function handleSourceInput() {
-    const tab = tabs.find(t => t.id === activeTab);
-    if (tab) {
-        tab.content = htmlSource.value;
-        tab.modified = true;
-        updateTabUI(tab);
+function applyColor(type, color) {
+  editor.focus();
+  if (type === 'foreColor') { document.execCommand('foreColor', false, color); document.documentElement.style.setProperty('--fc', color); }
+  else { document.execCommand('hiliteColor', false, color); document.documentElement.style.setProperty('--hc', color); document.getElementById('hlBar').style.background = color; }
+}
+
+function changeFontSize(delta) {
+  currentFontSize = Math.max(8, Math.min(72, currentFontSize + delta));
+  document.getElementById('fontSizeVal').value = currentFontSize;
+  editor.focus();
+  document.execCommand('fontSize', false, '7');
+  const fontElements = editor.getElementsByTagName('font');
+  for (let i = 0; i < fontElements.length; i++) {
+    if (fontElements[i].size === '7') { fontElements[i].removeAttribute('size'); fontElements[i].style.fontSize = currentFontSize + 'px'; }
+  }
+}
+
+function insertImageUI() {
+  saveSelection();
+  showModal('Sisipkan Gambar', '<label class="modal-body-label">Dari URL</label><input type="text" id="imgUrl" class="modal-body-input" placeholder="https://example.com/image.jpg"><label class="modal-body-label">Atau Upload dari Komputer</label><input type="file" id="imgFile" class="modal-body-input" accept="image/*" style="border:none;">').then(res => {
+    if (res) {
+      const url = document.getElementById('imgUrl').value;
+      const fileInput = document.getElementById('imgFile');
+      if (fileInput.files && fileInput.files[0]) { const reader = new FileReader(); reader.onload = e => insertImageAtSelection(e.target.result); reader.readAsDataURL(fileInput.files[0]); }
+      else if (url) { insertImageAtSelection(url); }
     }
-    const text = htmlSource.value;
-    document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
-    document.getElementById('charCount').textContent = text.length;
-    updateStatus();
+  });
 }
+function insertImageAtSelection(src) { editor.focus(); restoreSelection(); document.execCommand('insertHTML', false, '<img src="' + src + '" alt="Image" style="max-width:100%;border-radius:4px;margin:8px 0;">'); }
+function handleImageUpload(event) {}
 
-function updateStats() {
-    const editor = getCurrentEditor();
-    const text = editor ? editor.innerText : '';
-    document.getElementById('wordCount').textContent = text.trim() ? text.trim().split(/\s+/).length : 0;
-    document.getElementById('charCount').textContent = text.length;
-}
-
-function updateStatus() {
-    const tab = tabs.find(t => t.id === activeTab);
-    if (!tab) return;
-    document.getElementById('currentFileName').textContent = tab.name;
-    const icon = document.getElementById('saveStatusIcon');
-    icon.innerHTML = tab.modified ? '<i class="fas fa-circle text-yellow-500"></i>' : '<i class="fas fa-check-circle text-green-500"></i>';
-}
-
-function updateTabUI(tab) {
-    const el = document.getElementById('tabName-' + tab.id);
-    if (el) el.textContent = (tab.modified ? '* ' : '') + tab.name;
-}
-
-// --- File Ops ---
-function newFile() {
-    saveCurrentState();
-    tabCounter++;
-    const newId = tabCounter;
-    tabs.push({ id: newId, name: 'Untitled', content: '', modified: false });
-    renderTabs();
-    switchTab(newId);
-    showToast('File baru dibuat');
-}
-
-function saveCurrentState() {
-    if (isHtmlMode) {
-        const tab = tabs.find(t => t.id === activeTab);
-        if(tab) tab.content = htmlSource.value;
-    } else {
-        const editor = getCurrentEditor();
-        const tab = tabs.find(t => t.id === activeTab);
-        if (editor && tab) tab.content = editor.innerHTML;
+function insertTableUI() {
+  saveSelection();
+  showModal('Sisipkan Tabel', '<div style="display:flex;gap:12px;"><div style="flex:1;"><label class="modal-body-label">Baris</label><input type="number" id="tRows" class="modal-body-input" value="3" min="1" max="20"></div><div style="flex:1;"><label class="modal-body-label">Kolom</label><input type="number" id="tCols" class="modal-body-input" value="3" min="1" max="10"></div></div><label class="modal-body-label">Gaya</label><select id="tStyle" class="modal-body-input"><option value="normal">Grid Normal</option><option value="header">Dengan Baris Header</option></select>').then(res => {
+    if (res) {
+      const rows = parseInt(document.getElementById('tRows').value) || 3;
+      const cols = parseInt(document.getElementById('tCols').value) || 3;
+      const style = document.getElementById('tStyle').value;
+      generateTable(rows, cols, style);
     }
+  });
+}
+function generateTable(rows, cols, style) {
+  let html = '<table>';
+  for (let r = 0; r < rows; r++) { html += '<tr>'; for (let c = 0; c < cols; c++) { if (r === 0 && style === 'header') html += '<th>Header</th>'; else html += '<td>Sel</td>'; } html += '</tr>'; }
+  html += '</table><p></p>';
+  editor.focus(); restoreSelection(); document.execCommand('insertHTML', false, html);
 }
 
-function switchTab(id) {
-    if (isHtmlMode) {
-        toggleHtmlMode(); 
-    }
-
-    saveCurrentState();
-    activeTab = id;
-    document.querySelectorAll('[id^="editor-"]').forEach(e => e.style.display = 'none');
-    let editor = getEditor(id);
-    const tab = tabs.find(t => t.id === id);
-    if (!editor) {
-        editor = document.createElement('div');
-        editor.id = 'editor-' + id;
-        editor.className = 'editor-area';
-        editor.contentEditable = true;
-        editor.oninput = handleInput;
-        editor.style.fontSize = fontSize + 'px';
-        editor.style.fontFamily = currentFontFamily;
-        editorContainer.insertBefore(editor, htmlSource);
-    }
-    editor.style.display = 'block';
-    editor.innerHTML = tab ? tab.content : '';
-    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', parseInt(t.dataset.tab) === id));
-    updateStats();
-    updateStatus();
+function insertLinkUI() {
+  saveSelection();
+  let currentUrl = '';
+  const selection = window.getSelection();
+  if (selection.rangeCount > 0) { let container = selection.getRangeAt(0).commonAncestorContainer; if (container.nodeType !== 1) container = container.parentNode; const parentA = container.closest('a'); if (parentA) currentUrl = parentA.href; }
+  showModal('Sisipkan Link', '<label class="modal-body-label">URL</label><input type="text" id="linkUrl" class="modal-body-input" placeholder="https://example.com" value="' + currentUrl + '"><label class="modal-body-label">Teks Tampilan (Opsional)</label><input type="text" id="linkText" class="modal-body-input" placeholder="Teks link">').then(res => {
+    if (res) { const url = document.getElementById('linkUrl').value; const text = document.getElementById('linkText').value; if (url) { editor.focus(); restoreSelection(); document.execCommand('insertHTML', false, '<a href="' + url + '" target="_blank" rel="noopener noreferrer">' + (text || url) + '</a>'); } }
+  });
 }
 
-function addNewTab() { newFile(); }
+function saveSelection() { const sel = window.getSelection(); if (sel.rangeCount > 0) savedSelection = sel.getRangeAt(0); }
+function restoreSelection() { if (savedSelection) { const sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(savedSelection); } }
 
-function closeTab(e, id) {
-    e.stopPropagation();
-    if (tabs.length <= 1) { showToast('Tidak bisa menutup tab terakhir'); return; }
-    const index = tabs.findIndex(t => t.id === id);
-    tabs.splice(index, 1);
-    const editor = getEditor(id);
-    if (editor) editor.remove();
-    if (activeTab === id) switchTab(tabs[0].id);
-    renderTabs();
-    showToast('Tab ditutup');
+function updateCounts() {
+  const text = editor.innerText || '';
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('wordCount').textContent = 'Kata: ' + words;
+  document.getElementById('charCount').textContent = 'Karakter: ' + text.length;
 }
 
-function renderTabs() {
-    const container = document.getElementById('tabsContainer');
-    container.querySelectorAll('.tab').forEach(t => t.remove());
-    tabs.forEach(tab => {
-        const div = document.createElement('div');
-        div.className = 'tab' + (tab.id === activeTab ? ' active' : '');
-        div.dataset.tab = tab.id;
-        div.onclick = () => switchTab(tab.id);
-        div.innerHTML = `<i class="fas fa-file-alt text-xs"></i><span id="tabName-${tab.id}">${(tab.modified ? '* ' : '') + tab.name}</span><span class="tab-close" onclick="closeTab(event, ${tab.id})"><i class="fas fa-times"></i></span>`;
-        container.insertBefore(div, container.querySelector('button'));
-    });
+function showModal(title, bodyHTML) {
+  return new Promise((resolve) => {
+    const modal = document.getElementById('inlineModal');
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalBody').innerHTML = bodyHTML;
+    modal.style.display = 'flex';
+    document.getElementById('modalCancel').onclick = () => { modal.style.display = 'none'; resolve(null); };
+    document.getElementById('modalOk').onclick = () => { modal.style.display = 'none'; resolve(true); };
+  });
 }
 
-// --- Formatting ---
-function formatText(cmd) { 
-    if (isHtmlMode) return;
-    document.execCommand(cmd, false, null); 
-    getCurrentEditor().focus(); 
+function showToast(msg) { const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.getElementById('toasts').appendChild(t); setTimeout(() => t.remove(), 2500); }
+
+function showSaveAsDropdown(event) {
+  const dd = document.getElementById('saveAsDropdown');
+  const btn = event.currentTarget;
+  const rect = btn.getBoundingClientRect();
+  dd.style.top = (rect.bottom + 4) + 'px';
+  dd.style.left = rect.left + 'px';
+  dd.classList.toggle('show');
+  lucide.createIcons();
+}
+document.addEventListener('click', (e) => {
+  const dd = document.getElementById('saveAsDropdown');
+  if (!e.target.closest('#saveAsDropdown') && !e.target.closest('[onclick*="showSaveAsDropdown"]')) dd.classList.remove('show');
+});
+
+function openFile() { document.getElementById('fileInput').click(); }
+function handleFileOpen(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const content = e.target.result; const ext = file.name.split('.').pop().toLowerCase();
+    if (ext === 'txt') editor.innerHTML = escapeHTML(content).replace(/\n/g, '<br>');
+    else if (ext === 'html' || ext === 'htm') editor.innerHTML = content;
+    else editor.innerHTML = escapeHTML(content).replace(/\n/g, '<br>');
+    updateCounts(); performAutosave(); showToast('Dibuka: ' + file.name);
+  };
+  reader.readAsText(file); event.target.value = '';
+}
+function escapeHTML(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+function quickSave() { performAutosave(); showToast('Disimpan ke local storage ✓'); }
+
+function downloadAs(format) {
+  document.getElementById('saveAsDropdown').classList.remove('show');
+  const text = editor.innerText; const html = editor.innerHTML;
+  let blob, filename;
+  if (format === 'txt') { blob = new Blob([text], { type: 'text/plain;charset=utf-8' }); filename = 'dokumen.txt'; }
+  else if (format === 'html') { const fullHTML = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Dokumen</title><style>body{font-family:Arial,sans-serif;line-height:1.7;max-width:900px;margin:40px auto;padding:20px;} table{border-collapse:collapse;width:100%;} td,th{border:1px solid #ccc;padding:8px;}</style></head><body>' + html + '</body></html>'; blob = new Blob([fullHTML], { type: 'text/html;charset=utf-8' }); filename = 'dokumen.html'; }
+  else if (format === 'pdf') { downloadPDF(html); return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = filename; a.click(); URL.revokeObjectURL(a.href); showToast('Diunduh sebagai ' + format.toUpperCase());
+}
+function downloadPDF(html) {
+  if (!window.html2pdf) { const script = document.createElement('script'); script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js'; script.onload = () => generatePDF(html); document.head.appendChild(script); }
+  else generatePDF(html);
+}
+function generatePDF(html) {
+  const element = document.createElement('div'); element.innerHTML = html;
+  html2pdf().set({ margin: 10, filename: 'dokumen.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2 }, jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' } }).from(element).save().then(() => showToast('Diunduh sebagai PDF'));
 }
 
-// --- Link Functions ---
-function insertLink() {
-    if (isHtmlMode) return;
-    const url = prompt("Masukkan URL (misal: https://google.com):", "https://");
-    if (url) {
-        document.execCommand('createLink', false, url);
-        showToast('Link ditambahkan');
-    }
+function printDoc() { const w = window.open('', '_blank'); w.document.write('<html><head><title>Cetak</title></head><body>' + editor.innerHTML + '</body></html>'); w.document.close(); w.print(); }
+
+function newDocument() {
+  if (editor.innerText.trim().length > 0) { if (!confirm('Buka dokumen baru? Konten saat ini akan tersimpan di local storage.')) return; performAutosave(); }
+  window.open(window.location.href, '_blank');
+}
+function deleteAllContent() { if (editor.innerText.trim().length === 0) return; if (confirm('Hapus semua konten?')) { editor.innerHTML = ''; updateCounts(); performAutosave(); showToast('Konten dihapus'); } }
+function selectAll() { editor.focus(); document.execCommand('selectAll', false, null); }
+
+function toggleFind() { const bar = document.getElementById('findBar'); bar.classList.toggle('show'); if (bar.classList.contains('show')) document.getElementById('findInput').focus(); }
+function findText() { const term = document.getElementById('findInput').value; if (!term) return; window.find(term, false, false, true, false, false, false); }
+function replaceText() { const term = document.getElementById('findInput').value; const rep = document.getElementById('replaceInput').value; if (!term) return; if (window.find(term)) document.execCommand('insertText', false, rep); }
+function replaceAll() { const term = document.getElementById('findInput').value; const rep = document.getElementById('replaceInput').value; if (!term) return; let count = 0; while (window.find(term, false, false, false, false, false, false)) { document.execCommand('insertText', false, rep); count++; if (count > 5000) break; } showToast('Diganti ' + count + ' kemunculan'); }
+
+function insertDateTime() { editor.focus(); document.execCommand('insertText', false, new Date().toLocaleString('id-ID')); }
+
+async function insertSpecialChar() {
+  saveSelection();
+  const chars = '© ® ™ € £ ¥ ° ± × ÷ ≠ ≤ ≥ ∞ µ α β γ δ π σ φ ω Ω → ← ↑ ↓ ♠ ♣ ♥ ♦ ★ ☆ ✓ ✗ • … – —'.split(' ');
+  const grid = chars.map(c => '<span style="display:inline-block;width:32px;height:32px;text-align:center;line-height:32px;cursor:pointer;border-radius:4px;font-size:16px;" class="sym-char">' + c + '</span>').join('');
+  await showModal('Sisipkan Simbol', '<div style="display:flex;flex-wrap:wrap;gap:2px;">' + grid + '</div>');
+}
+document.addEventListener('click', (e) => {
+  if (e.target.classList.contains('sym-char')) { document.getElementById('inlineModal').style.display = 'none'; editor.focus(); restoreSelection(); document.execCommand('insertText', false, e.target.textContent); }
+});
+
+function setLineHeight(val) { editor.style.lineHeight = val; }
+
+function toggleDark() {
+  isDark = !isDark;
+  appShell.classList.toggle('dark', isDark);
+  // Text area selalu putih, pastikan tidak terpengaruh
+  editor.style.background = '#fff';
+  editor.style.color = '#222';
+  showToast(isDark ? 'Mode Gelap Aktif' : 'Mode Terang Aktif');
 }
 
-function removeLink() {
-    if (isHtmlMode) return;
-    document.execCommand('unlink', false, null);
-    showToast('Link dihapus');
+let wordWrap = true;
+function toggleWordWrap() { wordWrap = !wordWrap; editor.style.overflowWrap = wordWrap ? 'break-word' : 'normal'; editor.style.whiteSpace = wordWrap ? 'normal' : 'pre'; }
+function toggleFullscreen() { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.(); else document.exitFullscreen?.(); }
+
+function setZoom(val) {
+  currentZoom = parseInt(val);
+  editor.style.transform = 'scale(' + (currentZoom / 100) + ')';
+  editor.style.transformOrigin = 'top center';
+  document.getElementById('zoomVal').textContent = currentZoom + '%';
+  document.getElementById('zoomSlider').value = currentZoom;
 }
-
-// --- HTML Mode Toggle ---
-function toggleHtmlMode() {
-    const editor = getCurrentEditor();
-    const btn = document.getElementById('htmlModeBtn');
-    
-    if (!editor) return;
-
-    if (!isHtmlMode) {
-        editor.style.display = 'none';
-        htmlSource.style.display = 'block';
-        htmlSource.value = editor.innerHTML;
-        btn.classList.add('active');
-        modeIndicator.textContent = 'HTML';
-        modeIndicator.classList.add('bg-red-100', 'text-red-600');
-        modeIndicator.classList.remove('bg-gray-200');
-        isHtmlMode = true;
-    } else {
-        editor.innerHTML = htmlSource.value;
-        editor.style.display = 'block';
-        htmlSource.style.display = 'none';
-        btn.classList.remove('active');
-        modeIndicator.textContent = 'Visual';
-        modeIndicator.classList.remove('bg-red-100', 'text-red-600');
-        modeIndicator.classList.add('bg-gray-200');
-        isHtmlMode = false;
-        handleInput();
-    }
-}
-
-function copyText() { navigator.clipboard.writeText(getCurrentEditor().innerText).then(() => showToast('Disalin ke clipboard')); }
-function pasteText() { navigator.clipboard.readText().then(text => { document.execCommand('insertText', false, text); showToast('Teks ditempel'); }).catch(() => showToast('Gagal menempel')); }
-function clearContent() {
-    const editor = getCurrentEditor();
-    if (editor && confirm('Hapus semua teks di tab ini?')) { editor.innerHTML = ''; handleInput(); showToast('Konten dihapus'); }
-}
-
-// --- Font Family ---
-function changeFontFamily(family) {
-    currentFontFamily = family;
-    const editor = getCurrentEditor();
-    if (editor) editor.style.fontFamily = family;
-    localStorage.setItem('notepad_fontFamily', family);
-}
-
-// --- Font Color ---
-function triggerColorPicker() { document.getElementById('fontColorPicker').click(); }
-function applyFontColor(color) {
-    currentFontColor = color;
-    document.getElementById('colorIndicator').style.background = color;
-    localStorage.setItem('notepad_fontColor', color);
-    getCurrentEditor().focus();
-    document.execCommand('foreColor', false, color);
-}
-
-// --- Highlight ---
-function triggerHighlightPicker() { document.getElementById('highlightPicker').click(); }
-function applyHighlight(color) {
-    currentHighlight = color;
-    document.getElementById('highlightIndicator').style.background = color;
-    getCurrentEditor().focus();
-    document.execCommand('hiliteColor', false, color);
-}
-
-// --- Print ---
-function printDocument() {
-    const activeEditor = getCurrentEditor();
-    if (!activeEditor) return;
-    activeEditor.setAttribute('data-print-active', 'true');
-    const style = document.createElement('style');
-    style.id = 'printActiveStyle';
-    style.textContent = `@media print { [data-print-active="true"] { display: block !important; } }`;
-    document.head.appendChild(style);
-    window.print();
-    setTimeout(() => {
-        activeEditor.removeAttribute('data-print-active');
-        const s = document.getElementById('printActiveStyle');
-        if (s) s.remove();
-    }, 500);
-}
-
-// --- File IO ---
-function openFileDialog() { document.getElementById('fileInput').click(); }
-
-function handleFileOpen(e) {
-    const file = e.target.files[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop().toLowerCase();
-    const reader = new FileReader();
-    if (ext === 'pdf') { openPdf(file); }
-    else if (ext === 'docx') { openDocx(file); }
-    else { reader.onload = (ev) => { createFileTab(file.name, ev.target.result); }; reader.readAsText(file); }
-    e.target.value = '';
-}
-
-function createFileTab(name, content) {
-    tabCounter++;
-    const newId = tabCounter;
-    tabs.push({ id: newId, name: name, content: content, modified: false });
-    renderTabs();
-    switchTab(newId);
-    showToast('File dibuka: ' + name);
-}
-
-async function openPdf(file) {
-    try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-        const data = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({ data }).promise;
-        let text = '';
-        for (let i = 1; i <= pdf.numPages; i++) {
-            const page = await pdf.getPage(i);
-            const content = await page.getTextContent();
-            text += content.items.map(item => item.str).join(' ') + '\n';
-        }
-        createFileTab(file.name, text.replace(/\n/g, '<br>'));
-    } catch { showToast('Gagal membuka PDF'); }
-}
-
-async function openDocx(file) {
-    try {
-        const data = await file.arrayBuffer();
-        const result = await mammoth.convertToHtml({ arrayBuffer: data });
-        createFileTab(file.name, result.value);
-    } catch { showToast('Gagal membuka DOCX'); }
-}
-
-function saveFile() {
-    saveToLocalStorage();
-    const tab = tabs.find(t => t.id === activeTab);
-    if (tab) { tab.modified = false; updateTabUI(tab); }
-    updateStatus();
-    showToast('Tersimpan di LocalStorage');
-}
-
-function showSaveAsModal() {
-    const tab = tabs.find(t => t.id === activeTab);
-    document.getElementById('saveFileName').value = tab ? tab.name.replace(/\.[^/.]+$/, '') : 'Untitled';
-    document.getElementById('saveAsModal').classList.add('show');
-}
-
-function closeSaveAsModal() { document.getElementById('saveAsModal').classList.remove('show'); }
-
-function executeSaveAs() {
-    const name = document.getElementById('saveFileName').value || 'Untitled';
-    const format = document.getElementById('saveFormat').value;
-    if (isHtmlMode) toggleHtmlMode(); 
-
-    const editor = getCurrentEditor();
-    const content = editor.innerHTML;
-    const text = editor.innerText;
-    let blob, filename = name;
-
-    if (format === 'txt') { blob = new Blob([text], { type: 'text/plain' }); filename += '.txt'; }
-    else if (format === 'rtf') {
-        const rtf = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Arial;}}\\f0\\fs24 ${text.replace(/\n/g, '\\par ')}}`;
-        blob = new Blob([rtf], { type: 'application/rtf' }); filename += '.rtf';
-    } else if (format === 'html') {
-        blob = new Blob([`<!DOCTYPE html><html><body>${content}</body></html>`], { type: 'text/html' }); filename += '.html';
-    } else if (format === 'pdf') {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF();
-        const lines = doc.splitTextToSize(text, 180);
-        doc.text(lines, 10, 10);
-        doc.save(name + '.pdf');
-        closeSaveAsModal(); return;
-    }
-
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(a.href);
-
-    const tab = tabs.find(t => t.id === activeTab);
-    if (tab) { tab.name = filename; tab.modified = false; renderTabs(); updateStatus(); }
-    closeSaveAsModal();
-    showToast('File diunduh: ' + filename);
-}
-
-// --- Find & Replace ---
-function toggleFindPanel() {
-    const panel = document.getElementById('findPanel');
-    const isShown = panel.classList.contains('show');
-    if (isShown) { closeFindPanel(); } else {
-        panel.classList.add('show');
-        findActive = true;
-        document.getElementById('findToggleBtn').classList.add('active');
-        document.getElementById('findInput').focus();
-        const sel = window.getSelection();
-        if (sel && sel.toString().trim()) document.getElementById('findInput').value = sel.toString().trim();
-        onFindInput();
-    }
-}
-
-function closeFindPanel() {
-    document.getElementById('findPanel').classList.remove('show');
-    document.getElementById('findToggleBtn').classList.remove('active');
-    findActive = false;
-    clearFindHighlights();
-    findMatches = [];
-    currentMatchIndex = -1;
-    document.getElementById('matchCount').textContent = '';
-}
-
-function onFindInput() {
-    clearFindHighlights();
-    findMatches = [];
-    currentMatchIndex = -1;
-    const query = document.getElementById('findInput').value;
-    if (!query) { document.getElementById('matchCount').textContent = ''; return; }
-    performFind(query);
-}
-
-function performFind(query) {
-    const editor = getCurrentEditor();
-    if (!editor || isHtmlMode) return;
-    const matchCase = document.getElementById('matchCase').checked;
-    const flags = matchCase ? 'g' : 'gi';
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escapedQuery, flags);
-    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-    const textNodes = [];
-    let node;
-    while ((node = walker.nextNode())) textNodes.push(node);
-
-    findMatches = [];
-    textNodes.forEach(textNode => {
-        const parent = textNode.parentNode;
-        if (!parent || parent.classList && (parent.classList.contains('highlight-match') || parent.classList.contains('highlight-current'))) return;
-        const text = textNode.textContent;
-        let match;
-        const parts = [];
-        let lastIndex = 0;
-        regex.lastIndex = 0;
-        while ((match = regex.exec(text)) !== null) {
-            if (match.index > lastIndex) parts.push(document.createTextNode(text.slice(lastIndex, match.index)));
-            const span = document.createElement('mark');
-            span.className = 'highlight-match';
-            span.textContent = match[0];
-            parts.push(span);
-            findMatches.push(span);
-            lastIndex = regex.lastIndex;
-        }
-        if (parts.length > 0) {
-            if (lastIndex < text.length) parts.push(document.createTextNode(text.slice(lastIndex)));
-            const frag = document.createDocumentFragment();
-            parts.forEach(p => frag.appendChild(p));
-            parent.replaceChild(frag, textNode);
-        }
-    });
-
-    document.getElementById('matchCount').textContent = findMatches.length > 0 ? `${findMatches.length} ditemukan` : 'Tidak ditemukan';
-    if (findMatches.length > 0) { currentMatchIndex = 0; highlightCurrent(); }
-}
-
-function highlightCurrent() {
-    findMatches.forEach((m, i) => { m.className = i === currentMatchIndex ? 'highlight-current' : 'highlight-match'; });
-    if (findMatches[currentMatchIndex]) {
-        findMatches[currentMatchIndex].scrollIntoView({ behavior: 'smooth', block: 'center' });
-        document.getElementById('matchCount').textContent = `${currentMatchIndex + 1} / ${findMatches.length}`;
-    }
-}
-
-function findNext() { if (!findMatches.length) { onFindInput(); return; } currentMatchIndex = (currentMatchIndex + 1) % findMatches.length; highlightCurrent(); }
-function findPrev() { if (!findMatches.length) { onFindInput(); return; } currentMatchIndex = (currentMatchIndex - 1 + findMatches.length) % findMatches.length; highlightCurrent(); }
-
-function clearFindHighlights() {
-    const editor = getCurrentEditor();
-    if (!editor) return;
-    editor.querySelectorAll('mark.highlight-match, mark.highlight-current').forEach(mark => {
-        const parent = mark.parentNode;
-        if (parent) { parent.replaceChild(document.createTextNode(mark.textContent), mark); parent.normalize(); }
-    });
-}
-
-function refreshFindHighlights() {
-    const query = document.getElementById('findInput').value;
-    if (!query) return;
-    clearFindHighlights();
-    findMatches = [];
-    currentMatchIndex = -1;
-    performFind(query);
-}
-
-function replaceCurrent() {
-    if (currentMatchIndex < 0 || !findMatches[currentMatchIndex]) return;
-    const replacement = document.getElementById('replaceInput').value;
-    const mark = findMatches[currentMatchIndex];
-    const textNode = document.createTextNode(replacement);
-    mark.parentNode.replaceChild(textNode, mark);
-    findMatches.splice(currentMatchIndex, 1);
-    handleInput();
-    if (findMatches.length > 0) { currentMatchIndex = Math.min(currentMatchIndex, findMatches.length - 1); highlightCurrent(); } else { document.getElementById('matchCount').textContent = 'Tidak ada lagi'; }
-}
-
-function replaceAll() {
-    const query = document.getElementById('findInput').value;
-    if (!query) return;
-    clearFindHighlights();
-    const replacement = document.getElementById('replaceInput').value;
-    const matchCase = document.getElementById('matchCase').checked;
-    const editor = getCurrentEditor();
-    if (!editor) return;
-    const flags = matchCase ? 'g' : 'gi';
-    const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const regex = new RegExp(escapedQuery, flags);
-    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT, null, false);
-    const textNodes = [];
-    let node;
-    while ((node = walker.nextNode())) textNodes.push(node);
-    let count = 0;
-    textNodes.forEach(textNode => {
-        const newText = textNode.textContent.replace(regex, () => { count++; return replacement; });
-        if (newText !== textNode.textContent) textNode.textContent = newText;
-    });
-    handleInput();
-    findMatches = [];
-    currentMatchIndex = -1;
-    document.getElementById('matchCount').textContent = count > 0 ? `${count} diganti` : 'Tidak ditemukan';
-    showToast(count > 0 ? `${count} teks diganti` : 'Tidak ditemukan');
-}
-
-function findKeydown(e) { if (e.key === 'Enter') { e.shiftKey ? findPrev() : findNext(); } if (e.key === 'Escape') { closeFindPanel(); } }
-
-// --- Theme & Settings ---
-function toggleTheme() {
-    document.documentElement.classList.toggle('dark');
-    localStorage.setItem('notepad_theme', document.documentElement.classList.contains('dark') ? 'dark' : 'light');
-    showToast('Tema diganti');
-}
-
-function changeFontSize(d) {
-    fontSize = Math.max(10, Math.min(30, fontSize + d));
-    document.getElementById('fontSizeDisplay').textContent = fontSize;
-    const editor = getCurrentEditor();
-    if (editor) editor.style.fontSize = fontSize + 'px';
-    localStorage.setItem('notepad_fontSize', fontSize);
-}
-
-function loadSettings() {
-    if (localStorage.getItem('notepad_theme') === 'dark') document.documentElement.classList.add('dark');
-    const savedSize = localStorage.getItem('notepad_fontSize');
-    if (savedSize) { fontSize = parseInt(savedSize); document.getElementById('fontSizeDisplay').textContent = fontSize; }
-    const savedFont = localStorage.getItem('notepad_fontFamily');
-    if (savedFont) { currentFontFamily = savedFont; document.getElementById('fontFamilySelect').value = savedFont; }
-    const savedColor = localStorage.getItem('notepad_fontColor');
-    if (savedColor) { currentFontColor = savedColor; document.getElementById('fontColorPicker').value = savedColor; document.getElementById('colorIndicator').style.background = savedColor; }
-}
-
-// --- LocalStorage ---
-function saveToLocalStorage() { saveCurrentState(); localStorage.setItem('notepad_data', JSON.stringify({ tabs, activeTab })); }
-
-function loadFromLocalStorage() {
-    const data = localStorage.getItem('notepad_data');
-    if (data) {
-        try {
-            const parsed = JSON.parse(data);
-            if (parsed.tabs && parsed.tabs.length > 0) {
-                tabs = parsed.tabs;
-                tabCounter = Math.max(...tabs.map(t => t.id));
-                renderTabs();
-                switchTab(parsed.activeTab || tabs[0].id);
-            }
-        } catch (e) { console.error(e); }
-    }
-}
-
-// --- UI Helpers ---
-function toggleDropdown(id) { document.querySelectorAll('.dropdown-content').forEach(d => { if (d.id !== id) d.classList.remove('show'); }); document.getElementById(id).classList.toggle('show'); }
-function showToast(msg) { const t = document.getElementById('toast'); t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2000); }
-
-window.addEventListener('click', (e) => { if (!e.target.closest('.dropdown')) document.querySelectorAll('.dropdown-content').forEach(d => d.classList.remove('show')); });
+function zoomIn() { setZoom(Math.min(200, currentZoom + 10)); }
+function zoomOut() { setZoom(Math.max(50, currentZoom - 10)); }
 
 document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey) {
-        if (e.key === 's') { e.preventDefault(); e.shiftKey ? showSaveAsModal() : saveFile(); }
-        if (e.key === 'n') { e.preventDefault(); newFile(); }
-        if (e.key === 'b') { e.preventDefault(); formatText('bold'); }
-        if (e.key === 'i') { e.preventDefault(); formatText('italic'); }
-        if (e.key === 'h' || e.key === 'f') { e.preventDefault(); toggleFindPanel(); }
-        if (e.key === 'p') { e.preventDefault(); printDocument(); }
-        if (e.key === 'k') { e.preventDefault(); insertLink(); }
+  if (e.ctrlKey || e.metaKey) {
+    switch (e.key.toLowerCase()) {
+      case 's': e.preventDefault(); quickSave(); break;
+      case 'h': e.preventDefault(); toggleFind(); break;
+      case 'z': updateCounts(); break;
+      case 'y': updateCounts(); break;
     }
+  }
 });
-</script>
-</body>
+  </script>
+ </body>
 </html>
